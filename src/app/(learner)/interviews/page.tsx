@@ -1,0 +1,1 @@
+import { requireUser } from '@/modules/auth/session'; export default async function Page(){await requireUser();return <div className="container page"><h1 style={{fontSize:'2.5rem'}}>Phỏng vấn văn bản</h1><div className="card"><h2>Luyện câu trả lời có cấu trúc</h2><p>Phản hồi AI là hướng dẫn luyện tập, không phải kết quả tuyển dụng chính thức.</p></div></div>}

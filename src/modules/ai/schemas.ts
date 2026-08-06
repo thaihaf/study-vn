@@ -1,0 +1,4 @@
+import { z } from 'zod';
+export const blueprintSchema=z.object({title:z.string().min(3),shortDescription:z.string().min(10),category:z.string().min(1),level:z.string(),language:z.string().default('vi'),modules:z.array(z.object({title:z.string().min(1),description:z.string(),lessons:z.array(z.object({title:z.string().min(1),slug:z.string().regex(/^[a-z0-9-]+$/),objectives:z.array(z.string())})).min(1)})).min(1).max(20)});
+export const lessonSchema=z.object({title:z.string(),blocks:z.array(z.discriminatedUnion('type',[z.object({type:z.literal('HEADING'),content:z.object({text:z.string(),level:z.number().min(2).max(4)})}),z.object({type:z.literal('PARAGRAPH'),content:z.object({html:z.string()})}),z.object({type:z.literal('SUMMARY'),content:z.object({items:z.array(z.string())})})])).min(1)});
+export type Blueprint=z.infer<typeof blueprintSchema>;
