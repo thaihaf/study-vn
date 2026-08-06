@@ -1,121 +1,580 @@
-generator client { provider = "prisma-client-js" }
-datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+generator client {
+  provider = "prisma-client-js"
+}
 
-enum Role { SUPER_ADMIN CONTENT_ADMIN REVIEWER INSTRUCTOR LEARNER }
-enum VersionStatus { DRAFT IN_REVIEW PUBLISHED ARCHIVED }
-enum Visibility { PUBLIC UNLISTED PRIVATE }
-enum BlockType { HEADING PARAGRAPH CALLOUT EXAMPLE CODE DIAGRAM TABLE IMAGE QUIZ_EMBED FLASHCARD_SET SCENARIO ESSAY_PROMPT INTERVIEW_QUESTION SOURCE_REFERENCE SUMMARY }
-enum QuestionType { SINGLE_CHOICE MULTIPLE_CHOICE TRUE_FALSE SHORT_TEXT ESSAY CODE_REVIEW SCENARIO }
-enum ContentStatus { DRAFT PUBLISHED ARCHIVED }
-enum AssessmentType { QUIZ MOCK_EXAM }
-enum AttemptStatus { IN_PROGRESS SUBMITTED GRADED }
-enum SourceType { OFFICIAL_DOCUMENT OFFICIAL_PUBLICATION THIRD_PARTY_MATERIAL ADMIN_WRITTEN WEB_REFERENCE OTHER }
-enum ProcessingStatus { PENDING PROCESSING READY FAILED }
-enum JobStatus { QUEUED RUNNING SUCCEEDED FAILED CANCELLED }
-enum ReviewDecision { APPROVED REJECTED COMMENT }
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  CONTENT_ADMIN
+  REVIEWER
+  INSTRUCTOR
+  LEARNER
+}
+
+enum VersionStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum Visibility {
+  PUBLIC
+  UNLISTED
+  PRIVATE
+}
+
+enum BlockType {
+  HEADING
+  PARAGRAPH
+  CALLOUT
+  EXAMPLE
+  CODE
+  DIAGRAM
+  TABLE
+  IMAGE
+  QUIZ_EMBED
+  FLASHCARD_SET
+  SCENARIO
+  ESSAY_PROMPT
+  INTERVIEW_QUESTION
+  SOURCE_REFERENCE
+  SUMMARY
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_TEXT
+  ESSAY
+  CODE_REVIEW
+  SCENARIO
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AssessmentType {
+  QUIZ
+  MOCK_EXAM
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+  GRADED
+}
+
+enum SourceType {
+  OFFICIAL_DOCUMENT
+  OFFICIAL_PUBLICATION
+  THIRD_PARTY_MATERIAL
+  ADMIN_WRITTEN
+  WEB_REFERENCE
+  OTHER
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum JobStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
+enum ReviewDecision {
+  APPROVED
+  REJECTED
+  COMMENT
+}
 
 model User {
- id String @id @default(cuid())
- name String?
- email String @unique
- emailVerified DateTime?
- passwordHash String?
- role Role @default(LEARNER)
- canPublish Boolean @default(false)
- image String?
- createdAt DateTime @default(now())
- updatedAt DateTime @updatedAt
- accounts Account[]
- sessions Session[]
- courses Course[] @relation("CourseOwner")
- versions CourseVersion[] @relation("VersionCreator")
- enrollments Enrollment[]
- progress LessonProgress[]
- bookmarks Bookmark[]
- notes UserNote[]
- attempts AssessmentAttempt[]
- sources Source[]
- jobs GenerationJob[]
- auditLogs AuditLog[]
- passwordResetTokens PasswordResetToken[]
+  id                  String               @id @default(cuid())
+  name                String?
+  email               String               @unique
+  emailVerified       DateTime?
+  passwordHash        String?
+  role                Role                 @default(LEARNER)
+  canPublish          Boolean              @default(false)
+  image               String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  accounts            Account[]
+  sessions            Session[]
+  courses             Course[]             @relation("CourseOwner")
+  versions            CourseVersion[]      @relation("VersionCreator")
+  enrollments         Enrollment[]
+  progress            LessonProgress[]
+  bookmarks           Bookmark[]
+  notes               UserNote[]
+  attempts            AssessmentAttempt[]
+  sources             Source[]
+  jobs                GenerationJob[]
+  auditLogs           AuditLog[]
+  passwordResetTokens PasswordResetToken[]
 }
-model Account { id String @id @default(cuid()) userId String type String provider String providerAccountId String refresh_token String? @db.Text access_token String? @db.Text expires_at Int? token_type String? scope String? id_token String? @db.Text session_state String? user User @relation(fields:[userId],references:[id],onDelete:Cascade) @@unique([provider,providerAccountId]) }
-model Session { id String @id @default(cuid()) sessionToken String @unique userId String expires DateTime user User @relation(fields:[userId],references:[id],onDelete:Cascade) }
-model VerificationToken { identifier String token String @unique expires DateTime @@unique([identifier,token]) }
-model PasswordResetToken { id String @id @default(cuid()) tokenHash String @unique userId String expiresAt DateTime usedAt DateTime? createdAt DateTime @default(now()) user User @relation(fields:[userId],references:[id],onDelete:Cascade) }
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
 
 model Course {
- id String @id @default(cuid())
- title String
- slug String @unique
- shortDescription String
- coverImageUrl String?
- category String
- level String
- estimatedMinutes Int?
- language String @default("vi")
- visibility Visibility @default(PRIVATE)
- ownerId String
- currentPublishedVersionId String? @unique
- createdAt DateTime @default(now())
- updatedAt DateTime @updatedAt
- archivedAt DateTime?
- owner User @relation("CourseOwner",fields:[ownerId],references:[id])
- versions CourseVersion[] @relation("CourseVersions")
- currentPublishedVersion CourseVersion? @relation("PublishedVersion",fields:[currentPublishedVersionId],references:[id])
- enrollments Enrollment[]
- assessments Assessment[]
+  id                        String          @id @default(cuid())
+  title                     String
+  slug                      String          @unique
+  shortDescription          String
+  coverImageUrl             String?
+  category                  String
+  level                     String
+  estimatedMinutes          Int?
+  language                  String          @default("vi")
+  visibility                Visibility      @default(PRIVATE)
+  ownerId                   String
+  currentPublishedVersionId String?         @unique
+  createdAt                 DateTime        @default(now())
+  updatedAt                 DateTime        @updatedAt
+  archivedAt                DateTime?
+  owner                     User            @relation("CourseOwner", fields: [ownerId], references: [id])
+  versions                  CourseVersion[] @relation("CourseVersions")
+  currentPublishedVersion   CourseVersion?  @relation("PublishedVersion", fields: [currentPublishedVersionId], references: [id])
+  enrollments               Enrollment[]
+  assessments               Assessment[]
 }
+
 model CourseVersion {
- id String @id @default(cuid())
- courseId String
- versionNumber Int
- status VersionStatus @default(DRAFT)
- changeSummary String?
- createdById String
- reviewedById String?
- publishedById String?
- submittedAt DateTime?
- reviewedAt DateTime?
- publishedAt DateTime?
- createdAt DateTime @default(now())
- updatedAt DateTime @updatedAt
- revision Int @default(1)
- course Course @relation("CourseVersions",fields:[courseId],references:[id],onDelete:Cascade)
- publishedFor Course? @relation("PublishedVersion")
- creator User @relation("VersionCreator",fields:[createdById],references:[id])
- modules Module[]
- reviews Review[]
- enrollments Enrollment[]
- @@unique([courseId,versionNumber])
+  id            String        @id @default(cuid())
+  courseId      String
+  versionNumber Int
+  status        VersionStatus @default(DRAFT)
+  changeSummary String?
+  createdById   String
+  reviewedById  String?
+  publishedById String?
+  submittedAt   DateTime?
+  reviewedAt    DateTime?
+  publishedAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  revision      Int           @default(1)
+  course        Course        @relation("CourseVersions", fields: [courseId], references: [id], onDelete: Cascade)
+  publishedFor  Course?       @relation("PublishedVersion")
+  creator       User          @relation("VersionCreator", fields: [createdById], references: [id])
+  modules       Module[]
+  reviews       Review[]
+  enrollments   Enrollment[]
+
+  @@unique([courseId, versionNumber])
 }
-model Module { id String @id @default(cuid()) versionId String stableId String @default(cuid()) title String description String @default("") position Int estimatedMinutes Int? learningObjectives Json? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt version CourseVersion @relation(fields:[versionId],references:[id],onDelete:Cascade) lessons Lesson[] @@unique([versionId,position]) }
-model Lesson { id String @id @default(cuid()) moduleId String stableId String @default(cuid()) title String slug String description String @default("") position Int estimatedMinutes Int? learningObjectives Json? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt module Module @relation(fields:[moduleId],references:[id],onDelete:Cascade) blocks LessonBlock[] progress LessonProgress[] bookmarks Bookmark[] notes UserNote[] @@unique([moduleId,slug]) @@unique([moduleId,position]) }
-model LessonBlock { id String @id @default(cuid()) lessonId String type BlockType position Int contentJson Json isLocked Boolean @default(false) generatedByAI Boolean @default(false) generationJobId String? createdById String updatedById String updatedAt DateTime @updatedAt createdAt DateTime @default(now()) lesson Lesson @relation(fields:[lessonId],references:[id],onDelete:Cascade) citations BlockCitation[] @@unique([lessonId,position]) }
-model Review { id String @id @default(cuid()) versionId String reviewerId String decision ReviewDecision comment String createdAt DateTime @default(now()) version CourseVersion @relation(fields:[versionId],references:[id],onDelete:Cascade) }
 
-model Enrollment { id String @id @default(cuid()) userId String courseId String versionId String enrolledAt DateTime @default(now()) user User @relation(fields:[userId],references:[id],onDelete:Cascade) course Course @relation(fields:[courseId],references:[id],onDelete:Cascade) version CourseVersion @relation(fields:[versionId],references:[id]) @@unique([userId,courseId]) }
-model LessonProgress { id String @id @default(cuid()) userId String lessonId String versionId String completedAt DateTime? interactionSeconds Int @default(0) updatedAt DateTime @updatedAt user User @relation(fields:[userId],references:[id],onDelete:Cascade) lesson Lesson @relation(fields:[lessonId],references:[id],onDelete:Cascade) @@unique([userId,lessonId]) }
-model Bookmark { id String @id @default(cuid()) userId String lessonId String blockId String? createdAt DateTime @default(now()) user User @relation(fields:[userId],references:[id],onDelete:Cascade) lesson Lesson @relation(fields:[lessonId],references:[id],onDelete:Cascade) @@unique([userId,lessonId,blockId]) }
-model UserNote { id String @id @default(cuid()) userId String lessonId String blockId String? content String updatedAt DateTime @updatedAt createdAt DateTime @default(now()) user User @relation(fields:[userId],references:[id],onDelete:Cascade) lesson Lesson @relation(fields:[lessonId],references:[id],onDelete:Cascade) }
+model Module {
+  id                 String        @id @default(cuid())
+  versionId          String
+  stableId           String        @default(cuid())
+  title              String
+  description        String        @default("")
+  position           Int
+  estimatedMinutes   Int?
+  learningObjectives Json?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  version            CourseVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  lessons            Lesson[]
 
-model QuestionBank { id String @id @default(cuid()) title String description String @default("") questions Question[] }
-model Topic { id String @id @default(cuid()) name String slug String @unique questions Question[] proficiencies TopicProficiency[] }
-model Question { id String @id @default(cuid()) bankId String topicId String? prompt String type QuestionType difficulty Int @default(1) explanation String? referenceAnswer String? rubricJson Json? status ContentStatus @default(DRAFT) authorId String createdAt DateTime @default(now()) updatedAt DateTime @updatedAt bank QuestionBank @relation(fields:[bankId],references:[id],onDelete:Cascade) topic Topic? @relation(fields:[topicId],references:[id]) choices QuestionChoice[] assessments AssessmentQuestion[] citations QuestionCitation[] }
-model QuestionChoice { id String @id @default(cuid()) questionId String text String isCorrect Boolean position Int question Question @relation(fields:[questionId],references:[id],onDelete:Cascade) @@unique([questionId,position]) }
-model Assessment { id String @id @default(cuid()) courseId String? title String description String @default("") type AssessmentType timeLimitMinutes Int? passScore Int @default(70) randomizeQuestions Boolean @default(false) randomizeChoices Boolean @default(false) feedbackMode String @default("AFTER_SUBMISSION") maximumAttempts Int? published Boolean @default(false) course Course? @relation(fields:[courseId],references:[id]) questions AssessmentQuestion[] attempts AssessmentAttempt[] }
-model AssessmentQuestion { assessmentId String questionId String position Int points Int @default(1) assessment Assessment @relation(fields:[assessmentId],references:[id],onDelete:Cascade) question Question @relation(fields:[questionId],references:[id]) @@id([assessmentId,questionId]) }
-model AssessmentAttempt { id String @id @default(cuid()) assessmentId String userId String status AttemptStatus @default(IN_PROGRESS) score Float? startedAt DateTime @default(now()) submittedAt DateTime? assessment Assessment @relation(fields:[assessmentId],references:[id]) user User @relation(fields:[userId],references:[id],onDelete:Cascade) snapshots AttemptQuestionSnapshot[] answers AttemptAnswer[] }
-model AttemptQuestionSnapshot { id String @id @default(cuid()) attemptId String questionId String prompt String type QuestionType choicesJson Json rubricJson Json? explanation String? correctAnswerJson Json position Int attempt AssessmentAttempt @relation(fields:[attemptId],references:[id],onDelete:Cascade) }
-model AttemptAnswer { id String @id @default(cuid()) attemptId String snapshotId String answerJson Json isCorrect Boolean? pointsAwarded Float? feedbackJson Json? attempt AssessmentAttempt @relation(fields:[attemptId],references:[id],onDelete:Cascade) @@unique([attemptId,snapshotId]) }
-model TopicProficiency { id String @id @default(cuid()) userId String topicId String correct Int @default(0) total Int @default(0) score Float @default(0) topic Topic @relation(fields:[topicId],references:[id]) @@unique([userId,topicId]) }
-model ReviewItem { id String @id @default(cuid()) userId String questionId String dueAt DateTime intervalDays Int @default(1) ease Float @default(2.5) createdAt DateTime @default(now()) @@unique([userId,questionId]) }
+  @@unique([versionId, position])
+}
 
-model Source { id String @id @default(cuid()) title String author String? publisher String? sourceType SourceType reliabilityLevel Int @default(3) copyrightNote String? originalFilename String mimeType String size Int storageKey String @unique processingStatus ProcessingStatus @default(PENDING) uploadedById String createdAt DateTime @default(now()) archivedAt DateTime? uploader User @relation(fields:[uploadedById],references:[id]) chunks SourceChunk[] }
-model SourceChunk { id String @id @default(cuid()) sourceId String position Int text String pageNumber Int? section String? source Source @relation(fields:[sourceId],references:[id],onDelete:Cascade) blockCitations BlockCitation[] questionCitations QuestionCitation[] @@unique([sourceId,position]) }
-model BlockCitation { blockId String chunkId String label String? block LessonBlock @relation(fields:[blockId],references:[id],onDelete:Cascade) chunk SourceChunk @relation(fields:[chunkId],references:[id]) @@id([blockId,chunkId]) }
-model QuestionCitation { questionId String chunkId String question Question @relation(fields:[questionId],references:[id],onDelete:Cascade) chunk SourceChunk @relation(fields:[chunkId],references:[id]) @@id([questionId,chunkId]) }
+model Lesson {
+  id                 String           @id @default(cuid())
+  moduleId           String
+  stableId           String           @default(cuid())
+  title              String
+  slug               String
+  description        String           @default("")
+  position           Int
+  estimatedMinutes   Int?
+  learningObjectives Json?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  module             Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  blocks             LessonBlock[]
+  progress           LessonProgress[]
+  bookmarks          Bookmark[]
+  notes              UserNote[]
 
-model GenerationJob { id String @id @default(cuid()) idempotencyKey String @unique userId String status JobStatus @default(QUEUED) kind String userPrompt String settingsJson Json provider String model String inputSourceIds Json targetEntityId String? startedAt DateTime? endedAt DateTime? usageJson Json? errorCode String? errorMessage String? retryCount Int @default(0) outputSnapshot Json? createdAt DateTime @default(now()) user User @relation(fields:[userId],references:[id]) artifacts GenerationArtifact[] }
-model GenerationArtifact { id String @id @default(cuid()) jobId String kind String payload Json createdAt DateTime @default(now()) job GenerationJob @relation(fields:[jobId],references:[id],onDelete:Cascade) }
-model AuditLog { id String @id @default(cuid()) actorId String action String entityType String entityId String metadata Json? requestId String? createdAt DateTime @default(now()) actor User @relation(fields:[actorId],references:[id]) }
+  @@unique([moduleId, slug])
+  @@unique([moduleId, position])
+}
+
+model LessonBlock {
+  id              String          @id @default(cuid())
+  lessonId        String
+  type            BlockType
+  position        Int
+  contentJson     Json
+  isLocked        Boolean         @default(false)
+  generatedByAI   Boolean         @default(false)
+  generationJobId String?
+  createdById     String
+  updatedById     String
+  updatedAt       DateTime        @updatedAt
+  createdAt       DateTime        @default(now())
+  lesson          Lesson          @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  citations       BlockCitation[]
+
+  @@unique([lessonId, position])
+}
+
+model Review {
+  id         String         @id @default(cuid())
+  versionId  String
+  reviewerId String
+  decision   ReviewDecision
+  comment    String
+  createdAt  DateTime       @default(now())
+  version    CourseVersion  @relation(fields: [versionId], references: [id], onDelete: Cascade)
+}
+
+model Enrollment {
+  id         String        @id @default(cuid())
+  userId     String
+  courseId   String
+  versionId  String
+  enrolledAt DateTime      @default(now())
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course     Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  version    CourseVersion @relation(fields: [versionId], references: [id])
+
+  @@unique([userId, courseId])
+}
+
+model LessonProgress {
+  id                 String    @id @default(cuid())
+  userId             String
+  lessonId           String
+  versionId          String
+  completedAt        DateTime?
+  interactionSeconds Int       @default(0)
+  updatedAt          DateTime  @updatedAt
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson             Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  lessonId  String
+  blockId   String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId, blockId])
+}
+
+model UserNote {
+  id        String   @id @default(cuid())
+  userId    String
+  lessonId  String
+  blockId   String?
+  content   String
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+}
+
+model QuestionBank {
+  id          String     @id @default(cuid())
+  title       String
+  description String     @default("")
+  questions   Question[]
+}
+
+model Topic {
+  id            String             @id @default(cuid())
+  name          String
+  slug          String             @unique
+  questions     Question[]
+  proficiencies TopicProficiency[]
+}
+
+model Question {
+  id              String               @id @default(cuid())
+  bankId          String
+  topicId         String?
+  prompt          String
+  type            QuestionType
+  difficulty      Int                  @default(1)
+  explanation     String?
+  referenceAnswer String?
+  rubricJson      Json?
+  status          ContentStatus        @default(DRAFT)
+  authorId        String
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  bank            QuestionBank         @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  topic           Topic?               @relation(fields: [topicId], references: [id])
+  choices         QuestionChoice[]
+  assessments     AssessmentQuestion[]
+  citations       QuestionCitation[]
+}
+
+model QuestionChoice {
+  id         String   @id @default(cuid())
+  questionId String
+  text       String
+  isCorrect  Boolean
+  position   Int
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, position])
+}
+
+model Assessment {
+  id                 String               @id @default(cuid())
+  courseId           String?
+  title              String
+  description        String               @default("")
+  type               AssessmentType
+  timeLimitMinutes   Int?
+  passScore          Int                  @default(70)
+  randomizeQuestions Boolean              @default(false)
+  randomizeChoices   Boolean              @default(false)
+  feedbackMode       String               @default("AFTER_SUBMISSION")
+  maximumAttempts    Int?
+  published          Boolean              @default(false)
+  course             Course?              @relation(fields: [courseId], references: [id])
+  questions          AssessmentQuestion[]
+  attempts           AssessmentAttempt[]
+}
+
+model AssessmentQuestion {
+  assessmentId String
+  questionId   String
+  position     Int
+  points       Int        @default(1)
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  question     Question   @relation(fields: [questionId], references: [id])
+
+  @@id([assessmentId, questionId])
+}
+
+model AssessmentAttempt {
+  id           String                    @id @default(cuid())
+  assessmentId String
+  userId       String
+  status       AttemptStatus             @default(IN_PROGRESS)
+  score        Float?
+  startedAt    DateTime                  @default(now())
+  submittedAt  DateTime?
+  assessment   Assessment                @relation(fields: [assessmentId], references: [id])
+  user         User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  snapshots    AttemptQuestionSnapshot[]
+  answers      AttemptAnswer[]
+}
+
+model AttemptQuestionSnapshot {
+  id                String            @id @default(cuid())
+  attemptId         String
+  questionId        String
+  prompt            String
+  type              QuestionType
+  choicesJson       Json
+  rubricJson        Json?
+  explanation       String?
+  correctAnswerJson Json
+  position          Int
+  attempt           AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+}
+
+model AttemptAnswer {
+  id            String            @id @default(cuid())
+  attemptId     String
+  snapshotId    String
+  answerJson    Json
+  isCorrect     Boolean?
+  pointsAwarded Float?
+  feedbackJson  Json?
+  attempt       AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, snapshotId])
+}
+
+model TopicProficiency {
+  id      String @id @default(cuid())
+  userId  String
+  topicId String
+  correct Int    @default(0)
+  total   Int    @default(0)
+  score   Float  @default(0)
+  topic   Topic  @relation(fields: [topicId], references: [id])
+
+  @@unique([userId, topicId])
+}
+
+model ReviewItem {
+  id           String   @id @default(cuid())
+  userId       String
+  questionId   String
+  dueAt        DateTime
+  intervalDays Int      @default(1)
+  ease         Float    @default(2.5)
+  createdAt    DateTime @default(now())
+
+  @@unique([userId, questionId])
+}
+
+model Source {
+  id               String           @id @default(cuid())
+  title            String
+  author           String?
+  publisher        String?
+  sourceType       SourceType
+  reliabilityLevel Int              @default(3)
+  copyrightNote    String?
+  originalFilename String
+  mimeType         String
+  size             Int
+  storageKey       String           @unique
+  processingStatus ProcessingStatus @default(PENDING)
+  uploadedById     String
+  createdAt        DateTime         @default(now())
+  archivedAt       DateTime?
+  uploader         User             @relation(fields: [uploadedById], references: [id])
+  chunks           SourceChunk[]
+}
+
+model SourceChunk {
+  id                String             @id @default(cuid())
+  sourceId          String
+  position          Int
+  text              String
+  pageNumber        Int?
+  section           String?
+  source            Source             @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  blockCitations    BlockCitation[]
+  questionCitations QuestionCitation[]
+
+  @@unique([sourceId, position])
+}
+
+model BlockCitation {
+  blockId String
+  chunkId String
+  label   String?
+  block   LessonBlock @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  chunk   SourceChunk @relation(fields: [chunkId], references: [id])
+
+  @@id([blockId, chunkId])
+}
+
+model QuestionCitation {
+  questionId String
+  chunkId    String
+  question   Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  chunk      SourceChunk @relation(fields: [chunkId], references: [id])
+
+  @@id([questionId, chunkId])
+}
+
+model GenerationJob {
+  id             String               @id @default(cuid())
+  idempotencyKey String               @unique
+  userId         String
+  status         JobStatus            @default(QUEUED)
+  kind           String
+  userPrompt     String
+  settingsJson   Json
+  provider       String
+  model          String
+  inputSourceIds Json
+  targetEntityId String?
+  startedAt      DateTime?
+  endedAt        DateTime?
+  usageJson      Json?
+  errorCode      String?
+  errorMessage   String?
+  retryCount     Int                  @default(0)
+  outputSnapshot Json?
+  createdAt      DateTime             @default(now())
+  user           User                 @relation(fields: [userId], references: [id])
+  artifacts      GenerationArtifact[]
+}
+
+model GenerationArtifact {
+  id        String        @id @default(cuid())
+  jobId     String
+  kind      String
+  payload   Json
+  createdAt DateTime      @default(now())
+  job       GenerationJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  requestId  String?
+  createdAt  DateTime @default(now())
+  actor      User     @relation(fields: [actorId], references: [id])
+}
