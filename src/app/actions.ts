@@ -529,11 +529,16 @@ export async function submitAssessment(form: FormData) {
 
   await db.$transaction(async (transaction) => {
     for (const snapshot of attempt.snapshots) {
-      const raw = form.get(`answer_${snapshot.id}`);
+      const fieldName = `answer_${snapshot.id}`;
       const answer =
         snapshot.type === 'MULTIPLE_CHOICE'
-          ? form.getAll(`answer_${snapshot.id}`)
-          : raw;
+          ? form
+              .getAll(fieldName)
+              .filter((value): value is string => typeof value === 'string')
+          : (() => {
+              const value = form.get(fieldName);
+              return typeof value === 'string' ? value : '';
+            })();
       const { grade } = await import('@/modules/assessments/grading');
       const result = grade(
         {
@@ -552,7 +557,7 @@ export async function submitAssessment(form: FormData) {
         data: {
           attemptId,
           snapshotId: snapshot.id,
-          answerJson: answer ?? '',
+          answerJson: answer,
           isCorrect: result,
           pointsAwarded: result === true ? 1 : 0,
         },
