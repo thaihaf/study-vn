@@ -1,0 +1,45 @@
+name: Setup database
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  migrate-and-seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SEED_ADMIN_EMAIL: ${{ secrets.SEED_ADMIN_EMAIL }}
+      SEED_ADMIN_PASSWORD: ${{ secrets.SEED_ADMIN_PASSWORD }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          test -n "$DATABASE_URL" || (echo "Missing DATABASE_URL secret" && exit 1)
+          test -n "$SEED_ADMIN_EMAIL" || (echo "Missing SEED_ADMIN_EMAIL secret" && exit 1)
+          test -n "$SEED_ADMIN_PASSWORD" || (echo "Missing SEED_ADMIN_PASSWORD secret" && exit 1)
+          test ${#SEED_ADMIN_PASSWORD} -ge 12 || (echo "SEED_ADMIN_PASSWORD must be at least 12 characters" && exit 1)
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Apply pending migrations
+        run: npx prisma migrate deploy
+
+      - name: Create or update super admin
+        run: npm run db:seed
