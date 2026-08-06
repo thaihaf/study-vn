@@ -1,1 +1,15 @@
-import { db } from '@/lib/db'; export async function GET(){const started=Date.now();try{await db.$queryRaw`SELECT 1`;return Response.json({status:'ok',database:'ready',latencyMs:Date.now()-started},{headers:{'Cache-Control':'no-store'}})}catch(error){console.error(JSON.stringify({event:'health_failed',error:error instanceof Error?error.message:'unknown'}));return Response.json({status:'degraded',database:'unavailable'},{status:503})}}
+import { db } from '@/lib/db';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  const requestId = crypto.randomUUID();
+  const headers = { 'Cache-Control': 'no-store', 'X-Request-Id': requestId };
+  try {
+    await db.$queryRaw`SELECT 1`;
+    return Response.json({ status: 'ok', checks: { database: 'ready' } }, { headers });
+  } catch (error) {
+    console.error(JSON.stringify({ event: 'health_failed', requestId, errorType: error instanceof Error ? error.name : 'unknown' }));
+    return Response.json({ status: 'degraded', checks: { database: 'unavailable' } }, { status: 503, headers });
+  }
+}

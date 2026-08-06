@@ -88,3 +88,7 @@ E2E cần PostgreSQL đã migrate. Có thể đặt `AI_PROVIDER=fake`; không c
 ## Nâng cấp đề xuất
 
 Editor TipTap/dnd-kit đa block hoàn chỉnh; PostgreSQL FTS ranking; extractor PDF/DOCX cô lập; S3-compatible storage; transactional email; background worker; test E2E đầy đủ theo vai trò với database fixture; CSP nonce thay cho inline development allowances; metrics/tracing OpenTelemetry.
+
+## Cloud environment runbooks
+
+The repository/environment audit is in [`docs/REPOSITORY_AUDIT.md`](docs/REPOSITORY_AUDIT.md). Follow [`docs/ENVIRONMENT_SETUP.md`](docs/ENVIRONMENT_SETUP.md) for local, StackBlitz, and Supabase configuration and [`docs/VERCEL_DEPLOYMENT.md`](docs/VERCEL_DEPLOYMENT.md) for environment scoping and protected release migrations. Never run production migrations as part of a Vercel build.

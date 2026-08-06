@@ -1,5 +1,13 @@
 AGENTS.md — Build Contract for the AI Learning Platform
 
+## Permanent repository workflow rules
+
+- Always read `PROJECT_TRACE.md` before changing the repository.
+- Update `PROJECT_TRACE.md` before and after every meaningful task.
+- Never mark a task `DONE` without command or test evidence.
+- Never store secrets in the trace.
+- Never run destructive production migrations without explicit approval.
+
 0. Primary instruction
 
 Build the complete production-ready MVP described in this file.

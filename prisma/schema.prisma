@@ -1,5 +1,5 @@
 generator client { provider = "prisma-client-js" }
-datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+datasource db { provider = "postgresql" url = env("DATABASE_URL") directUrl = env("DIRECT_URL") }
 
 enum Role { SUPER_ADMIN CONTENT_ADMIN REVIEWER INSTRUCTOR LEARNER }
 enum VersionStatus { DRAFT IN_REVIEW PUBLISHED ARCHIVED }
