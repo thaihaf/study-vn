@@ -1,2 +1,30 @@
-import Link from 'next/link'; import { db } from '@/lib/db';
-export const metadata={title:'Khám phá'}; export default async function Explore(){const courses=await db.course.findMany({where:{visibility:'PUBLIC',currentPublishedVersionId:{not:null}},orderBy:{updatedAt:'desc'}});return <div className="container page"><h1 style={{fontSize:'2.6rem'}}>Khám phá lộ trình</h1><p className="muted">Các khóa học đã qua quy trình biên tập và xuất bản.</p><div className="grid" style={{gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))'}}>{courses.map(c=><Link className="card" href={`/courses/${c.slug}`} key={c.id}><span className="status">{c.category} · {c.level}</span><h2 style={{fontSize:'1.3rem'}}>{c.title}</h2><p className="muted">{c.shortDescription}</p><b>{c.estimatedMinutes?`${c.estimatedMinutes} phút`:'Học theo nhịp riêng'} →</b></Link>)}{!courses.length&&<div className="card muted">Chưa có khóa học được xuất bản.</div>}</div></div>}
+import Link from 'next/link';
+
+export const metadata = { title: 'Khám phá' };
+
+export default function Explore() {
+  return (
+    <div className="container page">
+      <h1 style={{ fontSize: '2.6rem' }}>Khám phá lộ trình</h1>
+      <p className="muted">
+        Giao diện khám phá đã sẵn sàng. Các khóa học sẽ xuất hiện sau khi cơ sở
+        dữ liệu được kết nối.
+      </p>
+
+      <div
+        className="grid"
+        style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))' }}
+      >
+        <div className="card muted">
+          Chưa có khóa học được xuất bản trong chế độ giao diện tạm thời.
+        </div>
+      </div>
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <Link className="btn secondary" href="/">
+          Quay lại trang chủ
+        </Link>
+      </div>
+    </div>
+  );
+}
