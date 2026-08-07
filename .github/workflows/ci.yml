@@ -147,14 +147,15 @@ jobs:
       - name: Formatting
         run: npm run format:check
 
+      - name: Production build without OpenAI key
+        run: npm run build
+
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Playwright functional smoke suite
-        run: npm run test:e2e -- tests/e2e/smoke.spec.ts --project=chromium
-
-      - name: Accessibility smoke suite
-        run: npm run test:a11y -- --project=chromium
-
-      - name: Production build without OpenAI key
-        run: npm run build
+      - name: Functional and accessibility browser smoke
+        run: >-
+          npm run test:e2e --
+          tests/e2e/smoke.spec.ts
+          tests/e2e/accessibility.spec.ts
+          --project=chromium
