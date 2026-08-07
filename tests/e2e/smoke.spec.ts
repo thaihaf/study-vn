@@ -1,7 +1,12 @@
 import { expect, test } from '@playwright/test';
 
-const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@ci.example.test';
-const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'AdminPassword123!';
+const adminEmail = process.env.SEED_ADMIN_EMAIL;
+const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+const learnerPassword = process.env.SEED_LEARNER_PASSWORD;
+
+if (!adminEmail || !adminPassword || !learnerPassword) {
+  throw new Error('Missing deterministic E2E credential environment variables.');
+}
 
 test.describe.configure({ retries: 0 });
 
@@ -27,7 +32,6 @@ test('admin publishes content and learner completes the core journey', async ({
 }) => {
   const suffix = runSuffix();
   const learnerEmail = `e2e-learner+${suffix}@ci.example.test`;
-  const learnerPassword = 'LearnerPassword123!';
   const courseTitle = `Khóa học kiểm thử E2E ${suffix}`;
   const questionPrompt = `Đâu là đáp án đúng của câu kiểm thử ${suffix}?`;
   const assessmentTitle = `Bài luyện kiểm thử E2E ${suffix}`;
@@ -92,7 +96,9 @@ test('admin publishes content and learner completes the core journey', async ({
   const optionLabel = `SINGLE_CHOICE · ${questionPrompt.slice(0, 90)}`;
   await questionSelect.selectOption({ label: optionLabel });
   await assessmentCard.getByRole('button', { name: 'Thêm câu' }).click();
-  await expect(assessmentCard.getByText(questionPrompt)).toBeVisible();
+  await expect(
+    assessmentCard.locator('ol > li').filter({ hasText: questionPrompt }),
+  ).toBeVisible();
 
   page.once('dialog', (dialog) => dialog.accept());
   await assessmentCard.getByRole('button', { name: 'Xuất bản' }).click();
