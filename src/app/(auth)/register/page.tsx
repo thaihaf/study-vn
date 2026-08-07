@@ -32,7 +32,10 @@ export default function Register() {
             autoComplete="new-password"
           />
         </label>
-        <SubmitButton idleLabel="Tạo tài khoản" pendingLabel="Đang tạo tài khoản…" />
+        <SubmitButton
+          idleLabel="Tạo tài khoản"
+          pendingLabel="Đang tạo tài khoản…"
+        />
       </form>
     </div>
   );
