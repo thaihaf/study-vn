@@ -87,10 +87,12 @@ test('admin publishes content and learner completes the core journey', async ({
   await assessmentCreateForm
     .getByRole('button', { name: 'Tạo bài đánh giá' })
     .click();
+  await expect(page).toHaveURL(/\/admin\/assessments\?created=/);
+  await expect(page.getByRole('status')).toContainText('Đã tạo bài đánh giá');
 
-  const assessmentCard = page
-    .locator('article.card')
-    .filter({ hasText: assessmentTitle });
+  const assessmentCard = page.getByRole('article', {
+    name: `Bài đánh giá: ${assessmentTitle}`,
+  });
   await expect(assessmentCard).toBeVisible();
 
   const questionSelect = assessmentCard.locator('select[name="questionId"]');
