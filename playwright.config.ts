@@ -18,6 +18,8 @@ export default defineConfig({
     url: 'http://127.0.0.1:3000/api/health',
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
+    stdout: 'pipe',
+    stderr: 'pipe',
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
