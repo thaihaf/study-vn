@@ -1,3 +1,4 @@
+import { ActionRedirectForm } from '@/components/shared/action-redirect-form';
 import { ConfirmButton } from '@/components/shared/confirm-button';
 import { ServerActionButton } from '@/components/shared/server-action-button';
 import { db } from '@/lib/db';
@@ -195,7 +196,7 @@ export default async function Page({
         <summary>
           <b>+ Tạo bài đánh giá</b>
         </summary>
-        <form
+        <ActionRedirectForm
           className="grid"
           action={createAssessment}
           style={{ marginTop: '1rem' }}
@@ -207,7 +208,7 @@ export default async function Page({
           >
             Tạo bài đánh giá
           </ServerActionButton>
-        </form>
+        </ActionRedirectForm>
       </details>
 
       <div className="grid" style={{ marginTop: '1rem' }}>
@@ -242,7 +243,7 @@ export default async function Page({
                     án: {assessment.randomizeChoices ? 'có' : 'không'}
                   </small>
                 </div>
-                <form action={toggleAssessmentPublished}>
+                <ActionRedirectForm action={toggleAssessmentPublished}>
                   <input
                     type="hidden"
                     name="assessmentId"
@@ -263,14 +264,14 @@ export default async function Page({
                       Xuất bản
                     </ServerActionButton>
                   )}
-                </form>
+                </ActionRedirectForm>
               </div>
 
               <details>
                 <summary>
                   <b>Chỉnh cài đặt bài đánh giá</b>
                 </summary>
-                <form
+                <ActionRedirectForm
                   className="grid"
                   action={updateAssessment}
                   style={{ marginTop: '1rem' }}
@@ -287,11 +288,14 @@ export default async function Page({
                   >
                     Lưu cài đặt
                   </ServerActionButton>
-                </form>
+                </ActionRedirectForm>
               </details>
 
               {!assessment.published && available.length > 0 && (
-                <form className="builder-row" action={addQuestionToAssessment}>
+                <ActionRedirectForm
+                  className="builder-row"
+                  action={addQuestionToAssessment}
+                >
                   <input
                     type="hidden"
                     name="assessmentId"
@@ -318,7 +322,7 @@ export default async function Page({
                   >
                     Thêm câu
                   </ServerActionButton>
-                </form>
+                </ActionRedirectForm>
               )}
 
               <ol className="grid">
@@ -333,7 +337,7 @@ export default async function Page({
                       </span>
                       {!assessment.published && (
                         <div className="builder-actions">
-                          <form action={moveAssessmentQuestion}>
+                          <ActionRedirectForm action={moveAssessmentQuestion}>
                             <input
                               type="hidden"
                               name="assessmentId"
@@ -366,8 +370,8 @@ export default async function Page({
                             >
                               ↓
                             </ServerActionButton>
-                          </form>
-                          <form action={removeQuestionFromAssessment}>
+                          </ActionRedirectForm>
+                          <ActionRedirectForm action={removeQuestionFromAssessment}>
                             <input
                               type="hidden"
                               name="assessmentId"
@@ -384,7 +388,7 @@ export default async function Page({
                             >
                               Bỏ
                             </ServerActionButton>
-                          </form>
+                          </ActionRedirectForm>
                         </div>
                       )}
                     </div>
