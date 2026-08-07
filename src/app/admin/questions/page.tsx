@@ -1,3 +1,4 @@
+import { ActionRedirectForm } from '@/components/shared/action-redirect-form';
 import { ConfirmButton } from '@/components/shared/confirm-button';
 import { ServerActionButton } from '@/components/shared/server-action-button';
 import { db } from '@/lib/db';
@@ -81,7 +82,7 @@ export default async function Page({
         <summary>
           <b>+ Thêm câu hỏi</b>
         </summary>
-        <form
+        <ActionRedirectForm
           className="grid"
           action={createQuestion}
           style={{ marginTop: '1rem' }}
@@ -170,7 +171,7 @@ export default async function Page({
           >
             Tạo câu hỏi
           </ServerActionButton>
-        </form>
+        </ActionRedirectForm>
       </details>
 
       <div className="grid" style={{ marginTop: '1rem' }}>
@@ -194,7 +195,7 @@ export default async function Page({
                 </p>
               </div>
               {question.assessments.length === 0 && (
-                <form action={deleteQuestion}>
+                <ActionRedirectForm action={deleteQuestion}>
                   <input type="hidden" name="questionId" value={question.id} />
                   <ConfirmButton
                     className="btn danger compact"
@@ -202,7 +203,7 @@ export default async function Page({
                   >
                     Xóa
                   </ConfirmButton>
-                </form>
+                </ActionRedirectForm>
               )}
             </div>
 
@@ -221,7 +222,7 @@ export default async function Page({
               <summary>
                 <b>Chỉnh sửa câu hỏi</b>
               </summary>
-              <form
+              <ActionRedirectForm
                 className="grid"
                 action={updateQuestion}
                 style={{ marginTop: '1rem' }}
@@ -340,7 +341,7 @@ export default async function Page({
                 >
                   Lưu thay đổi
                 </ServerActionButton>
-              </form>
+              </ActionRedirectForm>
             </details>
           </article>
         ))}
