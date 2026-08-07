@@ -7,6 +7,10 @@ import { z } from 'zod';
 
 import { db } from '@/lib/db';
 import { slugify } from '@/lib/utils';
+import {
+  courseTemplateValues,
+  learningStandardFor,
+} from '@/modules/ai/course-standard';
 import { getAIProvider } from '@/modules/ai/provider';
 import { blueprintSchema, lessonSchema } from '@/modules/ai/schemas';
 import { requirePermission } from '@/modules/auth/session';
@@ -21,6 +25,7 @@ const inputSchema = z.object({
   audience: z.string().max(1000).default(''),
   outcome: z.string().max(1500).default(''),
   duration: z.string().max(500).default(''),
+  template: z.enum(courseTemplateValues).default('GENERAL_LEARNING'),
 });
 
 const toJson = (value: unknown) => value as Prisma.InputJsonValue;
@@ -83,6 +88,8 @@ export async function createCourseFromDocuments(form: FormData) {
   }
 
   const prompt = [
+    learningStandardFor(input.template),
+    'YÊU CẦU RIÊNG CỦA KHÓA HỌC',
     'Nghiên cứu kỹ tài liệu nguồn rồi xây dựng khóa học dựa trên kiến thức trong tài liệu.',
     `Tên khóa học: ${input.title}`,
     `Mục tiêu và mô tả: ${input.description}`,
