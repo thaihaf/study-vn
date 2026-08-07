@@ -5,24 +5,28 @@ Các repository dưới đây là **reference**, không phải dependency bắt 
 ## github/spec-kit
 
 Áp dụng:
+
 - constitution → spec → plan → tasks → implementation → convergence;
 - requirement IDs, acceptance criteria và task traceability;
 - analysis cho ambiguity, contradiction, coverage gap;
 - feature artifacts được version-control.
 
 Không áp dụng:
+
 - không thêm Python/uv vào production image chỉ để chạy Spec Kit;
 - không tạo hàng loạt generated docs không được dùng/review.
 
 ## nextlevelbuilder/ui-ux-pro-max-skill
 
 Áp dụng:
+
 - accessibility/touch/performance trước decoration;
 - master design system + page overrides;
 - semantic color, typography, spacing, interaction checklist;
 - density khác nhau giữa marketing/learner/admin.
 
 Không áp dụng:
+
 - không copy style recommendation máy móc;
 - không dùng claymorphism/vibrant palette nếu xung đột long-study readability;
 - không vendor toàn bộ skill database/search engine vào app bundle.

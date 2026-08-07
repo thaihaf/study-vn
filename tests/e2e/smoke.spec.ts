@@ -70,9 +70,9 @@ test('admin publishes content and learner completes the core journey', async ({
     .fill('Đáp án đầu tiên được đánh dấu đúng.');
   await questionCreateForm.getByLabel('Trạng thái').selectOption('PUBLISHED');
   await questionCreateForm.getByRole('button', { name: 'Tạo câu hỏi' }).click();
-  await expect(
-    page.getByRole('heading', { name: questionPrompt }),
-  ).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('heading', { name: questionPrompt })).toBeVisible(
+    { timeout: 15_000 },
+  );
 
   await page.goto('/admin/assessments');
   const assessmentCreateForm = page

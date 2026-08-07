@@ -20,51 +20,51 @@ Tài liệu này tổng hợp product contract hiện tại với các nguyên t
 
 ### Light
 
-| Token | Value | Purpose |
-|---|---|---|
-| `--background` | `#FBFAF7` | warm app background |
-| `--surface` | `#FFFFFF` | cards/forms |
-| `--surface-subtle` | `#F3F7F4` | grouped/inset areas |
-| `--foreground` | `#17201C` | primary text |
-| `--foreground-muted` | `#66736C` | secondary text |
-| `--primary` | `#176B52` | brand, primary button |
-| `--primary-hover` | `#125741` | hover/pressed |
-| `--primary-foreground` | `#FFFFFF` | text on primary |
-| `--progress` | `#0F766E` | progress/learning state |
-| `--accent` | `#C2410C` | achievement/attention |
-| `--accent-foreground` | `#FFFFFF` | text on accent |
-| `--success` | `#16794A` | successful state |
-| `--warning` | `#A15C08` | warning |
-| `--danger` | `#B42318` | destructive/error |
-| `--info` | `#2563EB` | informational state |
-| `--border` | `#DDE4DF` | normal divider |
-| `--border-strong` | `#B9C7BF` | emphasized border |
-| `--focus-ring` | `#176B52` | keyboard focus |
+| Token                  | Value     | Purpose                 |
+| ---------------------- | --------- | ----------------------- |
+| `--background`         | `#FBFAF7` | warm app background     |
+| `--surface`            | `#FFFFFF` | cards/forms             |
+| `--surface-subtle`     | `#F3F7F4` | grouped/inset areas     |
+| `--foreground`         | `#17201C` | primary text            |
+| `--foreground-muted`   | `#66736C` | secondary text          |
+| `--primary`            | `#176B52` | brand, primary button   |
+| `--primary-hover`      | `#125741` | hover/pressed           |
+| `--primary-foreground` | `#FFFFFF` | text on primary         |
+| `--progress`           | `#0F766E` | progress/learning state |
+| `--accent`             | `#C2410C` | achievement/attention   |
+| `--accent-foreground`  | `#FFFFFF` | text on accent          |
+| `--success`            | `#16794A` | successful state        |
+| `--warning`            | `#A15C08` | warning                 |
+| `--danger`             | `#B42318` | destructive/error       |
+| `--info`               | `#2563EB` | informational state     |
+| `--border`             | `#DDE4DF` | normal divider          |
+| `--border-strong`      | `#B9C7BF` | emphasized border       |
+| `--focus-ring`         | `#176B52` | keyboard focus          |
 
 ### Dark
 
 Dark mode không dùng pure black. Surface có độ tách nhẹ, text không pure white để giảm glare.
 
-| Token | Value |
-|---|---|
-| `--background` | `#0F1512` |
-| `--surface` | `#18201C` |
-| `--surface-subtle` | `#202A25` |
-| `--foreground` | `#EDF4EF` |
-| `--foreground-muted` | `#AAB7B0` |
-| `--primary` | `#75D2AD` |
-| `--primary-hover` | `#95DFC0` |
+| Token                  | Value     |
+| ---------------------- | --------- |
+| `--background`         | `#0F1512` |
+| `--surface`            | `#18201C` |
+| `--surface-subtle`     | `#202A25` |
+| `--foreground`         | `#EDF4EF` |
+| `--foreground-muted`   | `#AAB7B0` |
+| `--primary`            | `#75D2AD` |
+| `--primary-hover`      | `#95DFC0` |
 | `--primary-foreground` | `#0D1A14` |
-| `--progress` | `#5EEAD4` |
-| `--accent` | `#FDBA74` |
-| `--accent-foreground` | `#3B1605` |
-| `--success` | `#6EE7A8` |
-| `--warning` | `#F6C66A` |
-| `--danger` | `#FF8C82` |
-| `--info` | `#93C5FD` |
-| `--border` | `#344039` |
-| `--border-strong` | `#53635A` |
-| `--focus-ring` | `#75D2AD` |
+| `--progress`           | `#5EEAD4` |
+| `--accent`             | `#FDBA74` |
+| `--accent-foreground`  | `#3B1605` |
+| `--success`            | `#6EE7A8` |
+| `--warning`            | `#F6C66A` |
+| `--danger`             | `#FF8C82` |
+| `--info`               | `#93C5FD` |
+| `--border`             | `#344039` |
+| `--border-strong`      | `#53635A` |
+| `--focus-ring`         | `#75D2AD` |
 
 ## 3. Typography
 

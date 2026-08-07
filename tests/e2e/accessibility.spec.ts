@@ -2,8 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
 const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@ci.example.test';
-const adminPassword =
-  process.env.SEED_ADMIN_PASSWORD ?? 'AdminPassword123!';
+const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'AdminPassword123!';
 const learnerEmail = process.env.SEED_LEARNER_EMAIL;
 const learnerPassword = process.env.SEED_LEARNER_PASSWORD;
 

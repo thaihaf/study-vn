@@ -15,6 +15,7 @@ Codebase đã triển khai phần lớn MVP nhưng đã xuất hiện một số
 Khi bắt đầu một feature, developer hoặc coding agent đọc constitution và feature spec để biết security, publish immutability, assessment secrecy, AI/source trust boundary, migration policy và UI quality gates trước khi viết code.
 
 **Acceptance**
+
 - Có `.specify/memory/constitution.md` được version-control.
 - Feature plan nêu deviation có chủ đích thay vì để tài liệu và code mâu thuẫn.
 
@@ -23,6 +24,7 @@ Khi bắt đầu một feature, developer hoặc coding agent đọc constitutio
 Khi tạo/refactor page, developer có thể lấy semantic token, spacing, interaction rule và page density từ `design-system/study-vn` thay vì chọn style riêng cho từng màn hình.
 
 **Acceptance**
+
 - Có MASTER design system và page overrides cho landing, learner dashboard, lesson reader, admin và course builder.
 - CSS runtime dùng semantic tokens và giữ alias tương thích cho code cũ.
 - Touch target, visible focus, reduced motion và responsive rule được mã hóa trong CSS.
@@ -32,6 +34,7 @@ Khi tạo/refactor page, developer có thể lấy semantic token, spacing, inte
 Khi CI chạy, lỗi accessibility nghiêm trọng trên các surface cốt lõi phải làm test fail giống functional regression.
 
 **Acceptance**
+
 - Playwright có axe scan cho public/auth và ít nhất một authenticated surface.
 - CI không bỏ qua accessibility suite.
 - Test output liệt kê violation đủ để debug.
@@ -41,6 +44,7 @@ Khi CI chạy, lỗi accessibility nghiêm trọng trên các surface cốt lõi
 Developer đọc README/spec sẽ không bị hướng dẫn sai về auth/session, data-access boundary hoặc cách verify build.
 
 **Acceptance**
+
 - README ghi rõ Credentials + JWT session hiện tại và lý do.
 - Quy tắc Server Component read-only query được ghi rõ.
 - CI là source of verification khi Vercel preview tạm thời không khả dụng.

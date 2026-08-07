@@ -24,8 +24,8 @@ export default function ErrorPage({
         <span className="status">Có lỗi xảy ra</span>
         <h1 style={{ fontSize: '2rem' }}>Trang này chưa tải được.</h1>
         <p className="muted">
-          Bạn có thể thử lại. Nếu lỗi tiếp tục xuất hiện, hãy quay lại trang trước
-          hoặc mở lại sau.
+          Bạn có thể thử lại. Nếu lỗi tiếp tục xuất hiện, hãy quay lại trang
+          trước hoặc mở lại sau.
         </p>
         <div>
           <Button onClick={reset}>Thử lại</Button>

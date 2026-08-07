@@ -23,15 +23,15 @@ export async function Header() {
           )}
           {session?.user ? (
             <form action={logout}>
-              <button
-                className={buttonClassName('secondary')}
-                type="submit"
-              >
+              <button className={buttonClassName('secondary')} type="submit">
                 {t('logout')}
               </button>
             </form>
           ) : (
-            <Link className={buttonClassName('primary', 'default', 'keep')} href="/login">
+            <Link
+              className={buttonClassName('primary', 'default', 'keep')}
+              href="/login"
+            >
               {t('login')}
             </Link>
           )}

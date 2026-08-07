@@ -68,17 +68,17 @@ Project vẫn khai báo `pnpm@10.14.0`; các script tương đương có thể c
 
 ## Biến môi trường
 
-| Biến | Bắt buộc | Ý nghĩa |
-| --- | ---: | --- |
-| `DATABASE_URL` | Có | PostgreSQL connection URL |
-| `AUTH_SECRET` | Có | Secret ký session, production dùng giá trị ngẫu nhiên mạnh |
-| `AUTH_TRUST_HOST` | Prod/proxy | Cho Auth.js tin cậy host do proxy cung cấp |
-| `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | Khi seed | Super admin ban đầu |
-| `SEED_LEARNER_EMAIL`, `SEED_LEARNER_PASSWORD` | Local/CI | Learner fixture tùy chọn |
-| `OPENAI_API_KEY` | Không | Thiếu key, manual CMS vẫn hoạt động |
-| `OPENAI_MODEL` | Khi dùng OpenAI | Model hỗ trợ Responses + Structured Outputs |
-| `AI_PROVIDER` | Không | `openai` hoặc `fake`; CI dùng `fake` |
-| `UPLOAD_DIR`, `MAX_UPLOAD_BYTES` | Không | Private upload storage và giới hạn file |
+| Biến                                          |        Bắt buộc | Ý nghĩa                                                    |
+| --------------------------------------------- | --------------: | ---------------------------------------------------------- |
+| `DATABASE_URL`                                |              Có | PostgreSQL connection URL                                  |
+| `AUTH_SECRET`                                 |              Có | Secret ký session, production dùng giá trị ngẫu nhiên mạnh |
+| `AUTH_TRUST_HOST`                             |      Prod/proxy | Cho Auth.js tin cậy host do proxy cung cấp                 |
+| `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`     |        Khi seed | Super admin ban đầu                                        |
+| `SEED_LEARNER_EMAIL`, `SEED_LEARNER_PASSWORD` |        Local/CI | Learner fixture tùy chọn                                   |
+| `OPENAI_API_KEY`                              |           Không | Thiếu key, manual CMS vẫn hoạt động                        |
+| `OPENAI_MODEL`                                | Khi dùng OpenAI | Model hỗ trợ Responses + Structured Outputs                |
+| `AI_PROVIDER`                                 |           Không | `openai` hoặc `fake`; CI dùng `fake`                       |
+| `UPLOAD_DIR`, `MAX_UPLOAD_BYTES`              |           Không | Private upload storage và giới hạn file                    |
 
 ## Data-access boundary
 
