@@ -31,15 +31,17 @@ export default async function AdminLayout({
   return (
     <div className="admin-shell">
       <nav className="sidebar" aria-label={t('adminNavigation')}>
+        <div className="sidebar-head">
+          <strong>Không gian quản trị</strong>
+          <span>{user.role.replaceAll('_', ' ')}</span>
+        </div>
         {links.map(([href, key]) => (
           <Link key={href} href={href}>
             {t(key)}
           </Link>
         ))}
       </nav>
-      <div className="page" style={{ paddingInline: 'clamp(1rem,4vw,3rem)' }}>
-        {children}
-      </div>
+      <div className="admin-content">{children}</div>
     </div>
   );
 }
