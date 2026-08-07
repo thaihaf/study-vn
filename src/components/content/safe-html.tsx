@@ -1,7 +1,13 @@
 'use client';
 
-import DOMPurify from 'dompurify';
-import { useMemo } from 'react';
+import createDOMPurify from 'dompurify';
+import { useEffect, useState } from 'react';
+
+const sanitizeOptions = {
+  USE_PROFILES: { html: true },
+  FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed'],
+  FORBID_ATTR: ['style', 'onerror', 'onload', 'onclick'],
+};
 
 export function SafeHtml({
   html,
@@ -10,15 +16,12 @@ export function SafeHtml({
   html: string;
   className?: string;
 }) {
-  const clean = useMemo(
-    () =>
-      DOMPurify.sanitize(html, {
-        USE_PROFILES: { html: true },
-        FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed'],
-        FORBID_ATTR: ['style', 'onerror', 'onload', 'onclick'],
-      }),
-    [html],
-  );
+  const [clean, setClean] = useState('');
+
+  useEffect(() => {
+    const purifier = createDOMPurify(window);
+    setClean(purifier.sanitize(html, sanitizeOptions));
+  }, [html]);
 
   return (
     <div className={className} dangerouslySetInnerHTML={{ __html: clean }} />
