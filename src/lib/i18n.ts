@@ -1,6 +1,39 @@
 export const vi = {
- brand: 'Lộ Trình Việt', explore: 'Khám phá', dashboard: 'Học tập', admin: 'Quản trị', login: 'Đăng nhập', logout: 'Đăng xuất', register: 'Tạo tài khoản',
- save: 'Lưu thay đổi', emptyCourses: 'Chưa có khóa học được xuất bản.', continue: 'Tiếp tục học', enroll: 'Bắt đầu học', complete: 'Hoàn thành bài', note: 'Ghi chú riêng', bookmark: 'Đánh dấu',
+  brand: 'Lộ Trình Việt',
+  explore: 'Khám phá',
+  dashboard: 'Học tập',
+  admin: 'Quản trị',
+  login: 'Đăng nhập',
+  loggingIn: 'Đang đăng nhập...',
+  logout: 'Đăng xuất',
+  register: 'Tạo tài khoản',
+  save: 'Lưu thay đổi',
+  email: 'Email',
+  password: 'Mật khẩu',
+  forgotPassword: 'Quên mật khẩu?',
+  noAccountRegister: 'Chưa có tài khoản? Đăng ký',
+  mainNavigation: 'Điều hướng chính',
+  adminNavigation: 'Điều hướng quản trị',
+  adminOverview: 'Tổng quan',
+  adminCourses: 'Khóa học',
+  adminGenerate: 'Tạo bằng AI',
+  adminGenerationJobs: 'AI jobs',
+  adminSources: 'Nguồn',
+  adminQuestions: 'Câu hỏi',
+  adminAssessments: 'Bài thi',
+  adminInterviews: 'Phỏng vấn',
+  adminReviews: 'Duyệt',
+  adminUsers: 'Người dùng',
+  adminAuditLogs: 'Nhật ký',
+  adminSettings: 'Cài đặt',
+  emptyCourses: 'Chưa có khóa học được xuất bản.',
+  continue: 'Tiếp tục học',
+  enroll: 'Bắt đầu học',
+  complete: 'Hoàn thành bài',
+  note: 'Ghi chú riêng',
+  bookmark: 'Đánh dấu',
 } as const;
+
 export type MessageKey = keyof typeof vi;
-export const t=(key:MessageKey)=>vi[key];
+
+export const t = (key: MessageKey) => vi[key];

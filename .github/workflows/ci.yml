@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: study_vn
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d study_vn"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/study_vn
+      AUTH_SECRET: ci-only-secret-ci-only-secret-ci-only-secret
+      AUTH_TRUST_HOST: 'true'
+      AI_PROVIDER: fake
+      SEED_ADMIN_EMAIL: admin@ci.example.test
+      SEED_ADMIN_PASSWORD: AdminPassword123!
+      SEED_LEARNER_EMAIL: seeded-learner@ci.example.test
+      SEED_LEARNER_PASSWORD: LearnerPassword123!
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Runtime dependency audit
+        run: npm audit --omit=dev --audit-level=critical
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Apply migrations to clean PostgreSQL
+        run: npm run db:migrate
+
+      - name: Seed deterministic CI users
+        run: npm run db:seed
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Formatting
+        run: npm run format:check
+
+      - name: Production build without OpenAI key
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Functional and accessibility browser smoke
+        run: >-
+          npm run test:e2e --
+          tests/e2e/smoke.spec.ts
+          tests/e2e/accessibility.spec.ts
+          --project=chromium
+
+      - name: Print Playwright failure context
+        if: failure()
+        shell: bash
+        run: |
+          echo '--- Playwright error contexts ---'
+          find test-results -type f -name error-context.md -print -exec cat {} \; || true
+
+      - name: Upload Playwright failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failure-${{ github.run_id }}
+          path: test-results
+          if-no-files-found: ignore
+          retention-days: 3

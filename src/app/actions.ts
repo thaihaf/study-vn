@@ -11,10 +11,7 @@ import { db } from '@/lib/db';
 import { slugify } from '@/lib/utils';
 import { getAIProvider } from '@/modules/ai/provider';
 import { requirePermission, requireUser } from '@/modules/auth/session';
-import {
-  publishVersion,
-  restoreVersion,
-} from '@/modules/publishing/service';
+import { publishVersion, restoreVersion } from '@/modules/publishing/service';
 import { chunks, uploadMetadata } from '@/modules/sources/service';
 
 const credentials = z.object({
@@ -248,21 +245,13 @@ export async function reviewVersion(form: FormData) {
 
 export async function publish(form: FormData) {
   const user = await requirePermission('course:publish');
-  await publishVersion(
-    db,
-    z.string().parse(form.get('versionId')),
-    user.id,
-  );
+  await publishVersion(db, z.string().parse(form.get('versionId')), user.id);
   revalidatePath('/explore');
 }
 
 export async function restore(form: FormData) {
   const user = await requirePermission('course:edit');
-  await restoreVersion(
-    db,
-    z.string().parse(form.get('versionId')),
-    user.id,
-  );
+  await restoreVersion(db, z.string().parse(form.get('versionId')), user.id);
   revalidatePath('/admin/courses');
 }
 

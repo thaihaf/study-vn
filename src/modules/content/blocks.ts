@@ -1,6 +1,49 @@
 import { z } from 'zod';
-const text=z.string().min(1).max(50000); const base={id:z.string().optional()};
-export const blockSchemas={HEADING:z.object({...base,text,level:z.number().int().min(2).max(4)}),PARAGRAPH:z.object({...base,html:text}),CALLOUT:z.object({...base,title:z.string().max(200),html:text,tone:z.enum(['info','warning','success'])}),EXAMPLE:z.object({...base,title:z.string(),html:text}),CODE:z.object({...base,code:text,language:z.string().max(40)}),DIAGRAM:z.object({...base,mermaid:text.refine(v=>!/<script|javascript:/i.test(v),'Sơ đồ không an toàn')}),TABLE:z.object({...base,headers:z.array(z.string()),rows:z.array(z.array(z.string()))}),IMAGE:z.object({...base,url:z.string().url(),alt:z.string().min(1),caption:z.string().optional()}),QUIZ_EMBED:z.object({...base,assessmentId:z.string()}),FLASHCARD_SET:z.object({...base,cards:z.array(z.object({front:text,back:text})).min(1)}),SCENARIO:z.object({...base,prompt:text}),ESSAY_PROMPT:z.object({...base,prompt:text}),INTERVIEW_QUESTION:z.object({...base,question:text}),SOURCE_REFERENCE:z.object({...base,chunkIds:z.array(z.string()).min(1)}),SUMMARY:z.object({...base,items:z.array(text).min(1)})} as const;
-export type BlockKind=keyof typeof blockSchemas;
-export function validateBlock(type:BlockKind,value:unknown){return blockSchemas[type].parse(value);}
-export const hasUnsafeContent=(value:unknown)=>/<script|javascript:|onerror\s*=|onload\s*=/i.test(JSON.stringify(value));
+const text = z.string().min(1).max(50000);
+const base = { id: z.string().optional() };
+export const blockSchemas = {
+  HEADING: z.object({ ...base, text, level: z.number().int().min(2).max(4) }),
+  PARAGRAPH: z.object({ ...base, html: text }),
+  CALLOUT: z.object({
+    ...base,
+    title: z.string().max(200),
+    html: text,
+    tone: z.enum(['info', 'warning', 'success']),
+  }),
+  EXAMPLE: z.object({ ...base, title: z.string(), html: text }),
+  CODE: z.object({ ...base, code: text, language: z.string().max(40) }),
+  DIAGRAM: z.object({
+    ...base,
+    mermaid: text.refine(
+      (v) => !/<script|javascript:/i.test(v),
+      'Sơ đồ không an toàn',
+    ),
+  }),
+  TABLE: z.object({
+    ...base,
+    headers: z.array(z.string()),
+    rows: z.array(z.array(z.string())),
+  }),
+  IMAGE: z.object({
+    ...base,
+    url: z.string().url(),
+    alt: z.string().min(1),
+    caption: z.string().optional(),
+  }),
+  QUIZ_EMBED: z.object({ ...base, assessmentId: z.string() }),
+  FLASHCARD_SET: z.object({
+    ...base,
+    cards: z.array(z.object({ front: text, back: text })).min(1),
+  }),
+  SCENARIO: z.object({ ...base, prompt: text }),
+  ESSAY_PROMPT: z.object({ ...base, prompt: text }),
+  INTERVIEW_QUESTION: z.object({ ...base, question: text }),
+  SOURCE_REFERENCE: z.object({ ...base, chunkIds: z.array(z.string()).min(1) }),
+  SUMMARY: z.object({ ...base, items: z.array(text).min(1) }),
+} as const;
+export type BlockKind = keyof typeof blockSchemas;
+export function validateBlock(type: BlockKind, value: unknown) {
+  return blockSchemas[type].parse(value);
+}
+export const hasUnsafeContent = (value: unknown) =>
+  /<script|javascript:|onerror\s*=|onload\s*=/i.test(JSON.stringify(value));

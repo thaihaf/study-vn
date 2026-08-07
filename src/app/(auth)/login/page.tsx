@@ -1,16 +1,17 @@
 import Link from 'next/link';
 
-import { login } from '@/app/actions';
+import { login } from '@/modules/auth/credential-actions';
+import { t } from '@/lib/i18n';
 
 import { LoginSubmitButton } from './login-submit-button';
 
 export default function Login() {
   return (
-    <div className="container page" style={{ maxWidth: 480 }}>
+    <div className="page container" style={{ maxWidth: 480 }}>
       <form className="card grid" action={login}>
         <h1 style={{ fontSize: '2rem' }}>Chào bạn trở lại</h1>
         <label className="label">
-          Email
+          {t('email')}
           <input
             className="input"
             name="email"
@@ -20,21 +21,21 @@ export default function Login() {
           />
         </label>
         <label className="label">
-          Mật khẩu
+          {t('password')}
           <input
             className="input"
             name="password"
             type="password"
-            minLength={8}
+            minLength={12}
             required
             autoComplete="current-password"
           />
         </label>
         <LoginSubmitButton />
         <Link className="muted" href="/forgot-password">
-          Quên mật khẩu?
+          {t('forgotPassword')}
         </Link>
-        <Link href="/register">Chưa có tài khoản? Đăng ký</Link>
+        <Link href="/register">{t('noAccountRegister')}</Link>
       </form>
     </div>
   );

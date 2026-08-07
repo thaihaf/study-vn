@@ -1,5 +1,59 @@
 import { z } from 'zod';
-export const allowedMime=new Set(['text/plain','text/markdown','application/pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
-export const uploadMetadata=z.object({title:z.string().min(2).max(200),sourceType:z.enum(['OFFICIAL_DOCUMENT','OFFICIAL_PUBLICATION','THIRD_PARTY_MATERIAL','ADMIN_WRITTEN','WEB_REFERENCE','OTHER']),filename:z.string().min(1).max(255).refine(v=>!v.includes('/')&&!v.includes('\\')),mimeType:z.string(),size:z.number().int().positive().max(Number(process.env.MAX_UPLOAD_BYTES??5242880))}).refine(v=>allowedMime.has(v.mimeType),'Định dạng tệp không được hỗ trợ');
-export function chunks(text:string,max=1400){const clean=text.replace(/\0/g,'').replace(/\r\n/g,'\n').trim();if(!clean)return [];const paras=clean.split(/\n\s*\n/);const out:string[]=[];let buffer='';for(const p of paras){if(buffer&&buffer.length+p.length+2>max){out.push(buffer);buffer='';}if(p.length>max){for(let i=0;i<p.length;i+=max)out.push(p.slice(i,i+max));}else buffer+=(buffer?'\n\n':'')+p;}if(buffer)out.push(buffer);return out;}
-export interface SourceRetriever{search(query:string,sourceIds:string[],limit?:number):Promise<Array<{id:string;text:string;sourceId:string}>>}
+export const allowedMime = new Set([
+  'text/plain',
+  'text/markdown',
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+]);
+export const uploadMetadata = z
+  .object({
+    title: z.string().min(2).max(200),
+    sourceType: z.enum([
+      'OFFICIAL_DOCUMENT',
+      'OFFICIAL_PUBLICATION',
+      'THIRD_PARTY_MATERIAL',
+      'ADMIN_WRITTEN',
+      'WEB_REFERENCE',
+      'OTHER',
+    ]),
+    filename: z
+      .string()
+      .min(1)
+      .max(255)
+      .refine((v) => !v.includes('/') && !v.includes('\\')),
+    mimeType: z.string(),
+    size: z
+      .number()
+      .int()
+      .positive()
+      .max(Number(process.env.MAX_UPLOAD_BYTES ?? 5242880)),
+  })
+  .refine(
+    (v) => allowedMime.has(v.mimeType),
+    'Định dạng tệp không được hỗ trợ',
+  );
+export function chunks(text: string, max = 1400) {
+  const clean = text.replace(/\0/g, '').replace(/\r\n/g, '\n').trim();
+  if (!clean) return [];
+  const paras = clean.split(/\n\s*\n/);
+  const out: string[] = [];
+  let buffer = '';
+  for (const p of paras) {
+    if (buffer && buffer.length + p.length + 2 > max) {
+      out.push(buffer);
+      buffer = '';
+    }
+    if (p.length > max) {
+      for (let i = 0; i < p.length; i += max) out.push(p.slice(i, i + max));
+    } else buffer += (buffer ? '\n\n' : '') + p;
+  }
+  if (buffer) out.push(buffer);
+  return out;
+}
+export interface SourceRetriever {
+  search(
+    query: string,
+    sourceIds: string[],
+    limit?: number,
+  ): Promise<Array<{ id: string; text: string; sourceId: string }>>;
+}

@@ -3,3 +3,6 @@ node_modules
 pnpm-lock.yaml
 playwright-report
 test-results
+# Handcrafted visual composition is kept stable independently of Prettier.
+src/app/page.tsx
+src/app/visual-refresh.css

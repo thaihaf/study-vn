@@ -22,3 +22,14 @@ declare module 'next-auth/jwt' {
     canPublish: boolean;
   }
 }
+
+declare module 'pdf-parse/lib/pdf-parse.js' {
+  type PdfParseResult = {
+    text: string;
+    numpages?: number;
+    info?: unknown;
+    metadata?: unknown;
+  };
+
+  export default function pdfParse(buffer: Buffer): Promise<PdfParseResult>;
+}
