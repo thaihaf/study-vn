@@ -337,7 +337,9 @@ export default async function Page({
                       </span>
                       {!assessment.published && (
                         <div className="builder-actions">
-                          <ActionRedirectForm action={moveAssessmentQuestion}>
+                          <ActionRedirectForm
+                            action={moveAssessmentQuestion}
+                          >
                             <input
                               type="hidden"
                               name="assessmentId"
@@ -371,7 +373,9 @@ export default async function Page({
                               ↓
                             </ServerActionButton>
                           </ActionRedirectForm>
-                          <ActionRedirectForm action={removeQuestionFromAssessment}>
+                          <ActionRedirectForm
+                            action={removeQuestionFromAssessment}
+                          >
                             <input
                               type="hidden"
                               name="assessmentId"
