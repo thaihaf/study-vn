@@ -225,16 +225,18 @@ export default async function Page() {
                     name="assessmentId"
                     value={assessment.id}
                   />
-                  <ConfirmButton
-                    className={assessment.published ? 'btn secondary' : 'btn'}
-                    message={
-                      assessment.published
-                        ? 'Ẩn bài đánh giá khỏi người học?'
-                        : 'Xuất bản bài đánh giá này?'
-                    }
-                  >
-                    {assessment.published ? 'Gỡ xuất bản' : 'Xuất bản'}
-                  </ConfirmButton>
+                  {assessment.published ? (
+                    <ConfirmButton
+                      className="btn secondary"
+                      message="Ẩn bài đánh giá khỏi người học?"
+                    >
+                      Gỡ xuất bản
+                    </ConfirmButton>
+                  ) : (
+                    <button className="btn" type="submit">
+                      Xuất bản
+                    </button>
+                  )}
                 </form>
               </div>
 
