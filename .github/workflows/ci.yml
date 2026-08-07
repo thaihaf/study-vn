@@ -12,12 +12,30 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: study_vn
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d study_vn"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
     env:
       DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/study_vn
       AUTH_SECRET: ci-only-secret-ci-only-secret-ci-only-secret
       AUTH_TRUST_HOST: 'true'
       AI_PROVIDER: fake
+      SEED_ADMIN_EMAIL: admin@ci.example.test
+      SEED_ADMIN_PASSWORD: AdminPassword123!
+      SEED_LEARNER_EMAIL: seeded-learner@ci.example.test
+      SEED_LEARNER_PASSWORD: LearnerPassword123!
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -33,6 +51,12 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
+      - name: Apply migrations to clean PostgreSQL
+        run: npm run db:migrate
+
+      - name: Seed deterministic CI users
+        run: npm run db:seed
+
       - name: Typecheck
         run: npm run typecheck
 
@@ -44,3 +68,12 @@ jobs:
 
       - name: Formatting
         run: npm run format:check
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Playwright smoke suite
+        run: npm run test:e2e -- --project=chromium
+
+      - name: Production build
+        run: npm run build
