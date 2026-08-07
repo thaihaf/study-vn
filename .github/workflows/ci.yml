@@ -67,7 +67,9 @@ jobs:
         run: npm test
 
       - name: Formatting
-        run: npm run format:check
+        run: |
+          npx prettier tests/e2e/smoke.spec.ts
+          npm run format:check
 
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
