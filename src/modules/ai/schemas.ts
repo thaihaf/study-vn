@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 export const blueprintSchema = z.object({
   title: z.string().min(3),
   shortDescription: z.string().min(10),
@@ -15,7 +16,7 @@ export const blueprintSchema = z.object({
             z.object({
               title: z.string().min(1),
               slug: z.string().regex(/^[a-z0-9-]+$/),
-              objectives: z.array(z.string()),
+              objectives: z.array(z.string()).min(1),
             }),
           )
           .min(1),
@@ -24,28 +25,63 @@ export const blueprintSchema = z.object({
     .min(1)
     .max(20),
 });
+
+const blockSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('HEADING'),
+    content: z.object({
+      text: z.string().min(1),
+      level: z.number().int().min(2).max(4),
+    }),
+  }),
+  z.object({
+    type: z.literal('PARAGRAPH'),
+    content: z.object({ html: z.string().min(1) }),
+  }),
+  z.object({
+    type: z.literal('CALLOUT'),
+    content: z.object({
+      title: z.string(),
+      html: z.string().min(1),
+      tone: z.enum(['info', 'warning', 'success']).default('info'),
+    }),
+  }),
+  z.object({
+    type: z.literal('EXAMPLE'),
+    content: z.object({ title: z.string(), html: z.string().min(1) }),
+  }),
+  z.object({
+    type: z.literal('SCENARIO'),
+    content: z.object({ prompt: z.string().min(1) }),
+  }),
+  z.object({
+    type: z.literal('ESSAY_PROMPT'),
+    content: z.object({ prompt: z.string().min(1) }),
+  }),
+  z.object({
+    type: z.literal('INTERVIEW_QUESTION'),
+    content: z.object({ question: z.string().min(1) }),
+  }),
+  z.object({
+    type: z.literal('FLASHCARD_SET'),
+    content: z.object({
+      cards: z
+        .array(
+          z.object({ front: z.string().min(1), back: z.string().min(1) }),
+        )
+        .min(1),
+    }),
+  }),
+  z.object({
+    type: z.literal('SUMMARY'),
+    content: z.object({ items: z.array(z.string().min(1)).min(1) }),
+  }),
+]);
+
 export const lessonSchema = z.object({
   title: z.string(),
-  blocks: z
-    .array(
-      z.discriminatedUnion('type', [
-        z.object({
-          type: z.literal('HEADING'),
-          content: z.object({
-            text: z.string(),
-            level: z.number().min(2).max(4),
-          }),
-        }),
-        z.object({
-          type: z.literal('PARAGRAPH'),
-          content: z.object({ html: z.string() }),
-        }),
-        z.object({
-          type: z.literal('SUMMARY'),
-          content: z.object({ items: z.array(z.string()) }),
-        }),
-      ]),
-    )
-    .min(1),
+  blocks: z.array(blockSchema).min(5),
 });
+
 export type Blueprint = z.infer<typeof blueprintSchema>;
+export type GeneratedLesson = z.infer<typeof lessonSchema>;
