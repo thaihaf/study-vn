@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { restore, submitReview } from '@/app/actions';
 import { CourseBuilder } from '@/components/admin/course-builder';
 import { ConfirmButton } from '@/components/shared/confirm-button';
+import { ServerActionButton } from '@/components/shared/server-action-button';
 import { db } from '@/lib/db';
 import { can } from '@/modules/auth/permissions';
 import { requirePermission } from '@/modules/auth/session';
@@ -94,7 +95,9 @@ export default async function Editor({
           </p>
           <form action={restore}>
             <input type="hidden" name="versionId" value={latest.id} />
-            <button className="btn">Tạo bản nháp từ phiên bản này</button>
+            <ServerActionButton className="btn" pendingLabel="Đang tạo bản nháp...">
+              Tạo bản nháp từ phiên bản này
+            </ServerActionButton>
           </form>
         </section>
       )}
@@ -127,7 +130,12 @@ export default async function Editor({
           <div className="builder-actions">
             <form action={submitReview}>
               <input type="hidden" name="versionId" value={draft.versionId} />
-              <button className="btn secondary">Gửi duyệt</button>
+              <ServerActionButton
+                className="btn secondary"
+                pendingLabel="Đang gửi duyệt..."
+              >
+                Gửi duyệt
+              </ServerActionButton>
             </form>
             {can(user.role, 'course:publish', user.canPublish) &&
               !validation.errors.length &&
@@ -138,9 +146,12 @@ export default async function Editor({
                     name="versionId"
                     value={draft.versionId}
                   />
-                  <button className="btn" type="submit">
+                  <ServerActionButton
+                    className="btn"
+                    pendingLabel="Đang xuất bản..."
+                  >
                     Xuất bản ngay
-                  </button>
+                  </ServerActionButton>
                   <small className="muted">
                     Phiên bản công khai hiện tại sẽ được lưu trữ.
                   </small>
@@ -175,9 +186,12 @@ export default async function Editor({
               {version.id !== draft?.versionId && (
                 <form action={restore}>
                   <input type="hidden" name="versionId" value={version.id} />
-                  <button className="btn secondary">
+                  <ServerActionButton
+                    className="btn secondary"
+                    pendingLabel="Đang khôi phục..."
+                  >
                     Khôi phục thành bản nháp
-                  </button>
+                  </ServerActionButton>
                 </form>
               )}
             </div>
