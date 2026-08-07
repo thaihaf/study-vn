@@ -1,3 +1,4 @@
+import { SubmitButton } from '@/components/ui/submit-button';
 import { register } from '@/modules/auth/credential-actions';
 
 export default function Register() {
@@ -31,7 +32,7 @@ export default function Register() {
             autoComplete="new-password"
           />
         </label>
-        <button className="btn">Tạo tài khoản</button>
+        <SubmitButton idleLabel="Tạo tài khoản" pendingLabel="Đang tạo tài khoản…" />
       </form>
     </div>
   );
