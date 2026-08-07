@@ -2,13 +2,12 @@
 
 import { Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
+import { db } from '@/lib/db';
 import { getAIProvider } from '@/modules/ai/provider';
 import { grade } from '@/modules/assessments/grading';
 import { requireUser } from '@/modules/auth/session';
-import { db } from '@/lib/db';
 
 function shuffle<T>(items: T[]) {
   const result = [...items];
@@ -85,7 +84,7 @@ export async function startAssessment(form: FormData) {
       },
     },
   });
-  redirect(`/assessments/${id}?attempt=${attempt.id}`);
+  return { redirectTo: `/assessments/${id}?attempt=${attempt.id}` };
 }
 
 export async function submitAssessment(form: FormData) {
@@ -187,7 +186,7 @@ export async function submitAssessment(form: FormData) {
     }
   });
 
-  redirect(`/attempts/${attemptId}/result`);
+  return { redirectTo: `/attempts/${attemptId}/result` };
 }
 
 export async function requestPracticeFeedback(form: FormData) {
