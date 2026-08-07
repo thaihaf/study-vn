@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation';
 
+import { ActionRedirectForm } from '@/components/shared/action-redirect-form';
+import { ServerActionButton } from '@/components/shared/server-action-button';
 import { db } from '@/lib/db';
 import { serializeForLearner } from '@/modules/assessments/grading';
 import {
@@ -48,10 +50,12 @@ export default async function Page({
         usedAttempts >= assessment.maximumAttempts ? (
           <div className="card">Bạn đã dùng hết số lần làm bài.</div>
         ) : (
-          <form action={startAssessment}>
+          <ActionRedirectForm action={startAssessment}>
             <input type="hidden" name="assessmentId" value={id} />
-            <button className="btn">Bắt đầu</button>
-          </form>
+            <ServerActionButton className="btn" pendingLabel="Đang bắt đầu...">
+              Bắt đầu
+            </ServerActionButton>
+          </ActionRedirectForm>
         )}
       </div>
     );
@@ -75,7 +79,7 @@ export default async function Page({
           lưu thời điểm bắt đầu và nộp bài.
         </p>
       )}
-      <form className="grid" action={submitAssessment}>
+      <ActionRedirectForm className="grid" action={submitAssessment}>
         <input type="hidden" name="attemptId" value={attempt.id} />
         {attempt.snapshots.map((raw, index) => {
           const question = serializeForLearner(raw);
@@ -120,8 +124,10 @@ export default async function Page({
             </fieldset>
           );
         })}
-        <button className="btn">Nộp bài</button>
-      </form>
+        <ServerActionButton className="btn" pendingLabel="Đang nộp bài...">
+          Nộp bài
+        </ServerActionButton>
+      </ActionRedirectForm>
     </div>
   );
 }
