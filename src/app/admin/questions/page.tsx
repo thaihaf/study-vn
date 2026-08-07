@@ -164,7 +164,10 @@ export default async function Page({
             Rubric (JSON hoặc văn bản)
             <textarea className="input code-input" name="rubric" rows={5} />
           </label>
-          <ServerActionButton className="btn" pendingLabel="Đang tạo câu hỏi...">
+          <ServerActionButton
+            className="btn"
+            pendingLabel="Đang tạo câu hỏi..."
+          >
             Tạo câu hỏi
           </ServerActionButton>
         </form>
