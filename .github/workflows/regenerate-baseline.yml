@@ -1,0 +1,50 @@
+name: Regenerate Prisma baseline
+
+on:
+  push:
+    branches:
+      - feat/complete-mvp-contract
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/complete-mvp-contract
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Generate clean baseline SQL
+        shell: bash
+        run: |
+          npx prisma migrate diff \
+            --from-empty \
+            --to-schema-datamodel prisma/schema.prisma \
+            --script > prisma/migrations/20260806000000_init/migration.sql
+          sha256sum prisma/migrations/20260806000000_init/migration.sql | awk '{print $1}' > prisma/migrations/20260806000000_init/checksum.txt
+
+      - name: Commit baseline
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "Baseline already matches schema."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add prisma/migrations/20260806000000_init/migration.sql prisma/migrations/20260806000000_init/checksum.txt
+          git commit -m "fix: regenerate valid Prisma baseline migration"
+          git push origin HEAD:feat/complete-mvp-contract
