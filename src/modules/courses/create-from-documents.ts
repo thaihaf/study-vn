@@ -11,8 +11,13 @@ import {
   courseTemplateValues,
   learningStandardFor,
 } from '@/modules/ai/course-standard';
-import { getAIProvider } from '@/modules/ai/provider';
-import { blueprintSchema, lessonSchema } from '@/modules/ai/schemas';
+import {
+  documentCourseProviderMetadata,
+  generateRichDocumentLesson,
+  getDocumentCourseProvider,
+  selectRelevantSources,
+} from '@/modules/ai/document-course';
+import { blueprintSchema } from '@/modules/ai/schemas';
 import { requirePermission } from '@/modules/auth/session';
 import { extractTextFromUpload } from '@/modules/sources/extract';
 import { chunks, uploadMetadata } from '@/modules/sources/service';
@@ -29,6 +34,36 @@ const inputSchema = z.object({
 });
 
 const toJson = (value: unknown) => value as Prisma.InputJsonValue;
+
+function requestedScope(duration: string) {
+  const moduleMatch = duration.match(/(\d+)\s*module/i);
+  const lessonRange = duration.match(/(\d+)\s*-\s*(\d+)\s*(?:bài|lesson)/i);
+  const lessonSingle = duration.match(/(\d+)\s*(?:bài|lesson)/i);
+  return {
+    minModules: moduleMatch ? Math.min(Number(moduleMatch[1]), 20) : 2,
+    minLessons: lessonRange
+      ? Number(lessonRange[1])
+      : lessonSingle
+        ? Number(lessonSingle[1])
+        : 6,
+  };
+}
+
+function assertBlueprintScope(
+  blueprint: z.infer<typeof blueprintSchema>,
+  duration: string,
+) {
+  const { minModules, minLessons } = requestedScope(duration);
+  const lessonCount = blueprint.modules.reduce(
+    (total, courseModule) => total + courseModule.lessons.length,
+    0,
+  );
+  if (blueprint.modules.length < minModules || lessonCount < minLessons) {
+    throw new Error(
+      `AI_COURSE_SCOPE_TOO_SMALL:${blueprint.modules.length}_modules:${lessonCount}_lessons`,
+    );
+  }
+}
 
 export async function createCourseFromDocuments(form: FormData) {
   const user = await requirePermission('course:edit');
@@ -98,11 +133,13 @@ export async function createCourseFromDocuments(form: FormData) {
     input.audience && `Đối tượng học: ${input.audience}`,
     input.outcome && `Kết quả mong muốn: ${input.outcome}`,
     input.duration && `Thời lượng hoặc số bài: ${input.duration}`,
+    'Quy mô người dùng yêu cầu là yêu cầu thật, không được rút thành khóa demo 1 module/1 bài. Mỗi module cần có các bài đủ để đạt mục tiêu và tránh nội dung placeholder.',
     'Ưu tiên nội dung có căn cứ trong nguồn và sắp xếp bài học theo thứ tự hợp lý.',
   ]
     .filter(Boolean)
     .join('\n');
 
+  const providerMetadata = documentCourseProviderMetadata();
   const job = await db.generationJob.create({
     data: {
       idempotencyKey: crypto.randomUUID(),
@@ -110,10 +147,8 @@ export async function createCourseFromDocuments(form: FormData) {
       kind: 'FULL_COURSE',
       userPrompt: prompt,
       settingsJson: toJson({ ...input, sourceIds, language: 'vi' }),
-      provider: process.env.AI_PROVIDER ?? 'openai',
-      model:
-        process.env.OPENAI_MODEL ??
-        (process.env.AI_PROVIDER === 'fake' ? 'fake' : 'not-configured'),
+      provider: providerMetadata.provider,
+      model: providerMetadata.model,
       inputSourceIds: toJson(sourceIds),
       status: 'RUNNING',
       startedAt: new Date(),
@@ -127,23 +162,29 @@ export async function createCourseFromDocuments(form: FormData) {
       language: 'vi',
       sources: sourceContext.slice(0, 80),
     };
-    const provider = getAIProvider();
+    const provider = getDocumentCourseProvider();
     const blueprint = blueprintSchema.parse(
       await provider.generateCourseBlueprint(context),
     );
+    assertBlueprintScope(blueprint, input.duration);
 
     const moduleData = [];
     for (const [modulePosition, courseModule] of blueprint.modules.entries()) {
-      const lessonData = [];
-      for (const [lessonPosition, lesson] of courseModule.lessons.entries()) {
-        const generated = lessonSchema.parse(
-          await provider.generateLesson({
-            ...context,
-            prompt: `${prompt}\n\nViết bài học "${lesson.title}". Mục tiêu: ${lesson.objectives.join('; ')}`,
-          }),
-        );
-        lessonData.push({ lesson, generated, lessonPosition });
-      }
+      const lessonData = await Promise.all(
+        courseModule.lessons.map(async (lesson, lessonPosition) => {
+          const lessonQuery = `${courseModule.title} ${lesson.title} ${lesson.objectives.join(' ')}`;
+          const generated = await generateRichDocumentLesson({
+            prompt: `${prompt}\n\nMODULE: ${courseModule.title}\nViết đầy đủ bài học "${lesson.title}". Mục tiêu: ${lesson.objectives.join('; ')}. Không dùng câu placeholder. Nội dung phải đủ để người học tự học và trả lời câu hỏi kiểm tra/phỏng vấn liên quan.`,
+            language: context.language,
+            sources: selectRelevantSources(sourceContext, lessonQuery),
+          });
+          const contentSize = JSON.stringify(generated.blocks).length;
+          if (generated.blocks.length < 7 || contentSize < 1800) {
+            throw new Error(`AI_LESSON_TOO_SHORT:${lesson.slug}`);
+          }
+          return { lesson, generated, lessonPosition };
+        }),
+      );
       moduleData.push({ courseModule, modulePosition, lessonData });
     }
 
@@ -172,7 +213,7 @@ export async function createCourseFromDocuments(form: FormData) {
                       ({ lesson, generated, lessonPosition }) => ({
                         title: lesson.title,
                         slug: lesson.slug,
-                        description: '',
+                        description: courseModule.description,
                         position: lessonPosition,
                         learningObjectives: toJson(lesson.objectives),
                         blocks: {
