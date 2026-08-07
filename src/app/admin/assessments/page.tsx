@@ -1,4 +1,5 @@
 import { ConfirmButton } from '@/components/shared/confirm-button';
+import { ServerActionButton } from '@/components/shared/server-action-button';
 import { db } from '@/lib/db';
 import {
   addQuestionToAssessment,
@@ -200,9 +201,9 @@ export default async function Page({
           style={{ marginTop: '1rem' }}
         >
           <AssessmentFields courses={courses} />
-          <button className="btn" type="submit">
+          <ServerActionButton className="btn" pendingLabel="Đang tạo bài đánh giá...">
             Tạo bài đánh giá
-          </button>
+          </ServerActionButton>
         </form>
       </details>
 
@@ -252,9 +253,9 @@ export default async function Page({
                       Gỡ xuất bản
                     </ConfirmButton>
                   ) : (
-                    <button className="btn" type="submit">
+                    <ServerActionButton className="btn" pendingLabel="Đang xuất bản...">
                       Xuất bản
-                    </button>
+                    </ServerActionButton>
                   )}
                 </form>
               </div>
@@ -274,7 +275,12 @@ export default async function Page({
                     value={assessment.id}
                   />
                   <AssessmentFields assessment={assessment} courses={courses} />
-                  <button className="btn secondary">Lưu cài đặt</button>
+                  <ServerActionButton
+                    className="btn secondary"
+                    pendingLabel="Đang lưu cài đặt..."
+                  >
+                    Lưu cài đặt
+                  </ServerActionButton>
                 </form>
               </details>
 
@@ -300,7 +306,12 @@ export default async function Page({
                       </option>
                     ))}
                   </select>
-                  <button className="btn secondary">Thêm câu</button>
+                  <ServerActionButton
+                    className="btn secondary"
+                    pendingLabel="Đang thêm câu..."
+                  >
+                    Thêm câu
+                  </ServerActionButton>
                 </form>
               )}
 
@@ -327,16 +338,17 @@ export default async function Page({
                               name="questionId"
                               value={item.questionId}
                             />
-                            <button
+                            <ServerActionButton
                               className="btn secondary compact"
                               name="direction"
                               value="up"
                               disabled={index === 0}
                               aria-label="Đưa câu hỏi lên"
+                              pendingLabel="…"
                             >
                               ↑
-                            </button>
-                            <button
+                            </ServerActionButton>
+                            <ServerActionButton
                               className="btn secondary compact"
                               name="direction"
                               value="down"
@@ -344,9 +356,10 @@ export default async function Page({
                                 index === assessment.questions.length - 1
                               }
                               aria-label="Đưa câu hỏi xuống"
+                              pendingLabel="…"
                             >
                               ↓
-                            </button>
+                            </ServerActionButton>
                           </form>
                           <form action={removeQuestionFromAssessment}>
                             <input
@@ -359,7 +372,12 @@ export default async function Page({
                               name="questionId"
                               value={item.questionId}
                             />
-                            <button className="btn danger compact">Bỏ</button>
+                            <ServerActionButton
+                              className="btn danger compact"
+                              pendingLabel="Đang bỏ..."
+                            >
+                              Bỏ
+                            </ServerActionButton>
                           </form>
                         </div>
                       )}
