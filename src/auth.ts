@@ -1,4 +1,5 @@
 import { PrismaAdapter } from '@auth/prisma-adapter';
+import type { Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
@@ -51,15 +52,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          id: token.sub ?? '',
-          role: token.role,
-          canPublish: Boolean(token.canPublish),
-        },
-      };
+      session.user.id = token.sub ?? '';
+      session.user.role = token.role as Role;
+      session.user.canPublish = Boolean(token.canPublish);
+
+      return session;
     },
   },
 });
