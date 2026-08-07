@@ -1,9 +1,16 @@
+import Link from 'next/link';
+
+import { applyGenerationJob } from '@/modules/ai/actions';
 import { db } from '@/lib/db';
 import { requirePermission } from '@/modules/auth/session';
 
-export default async function Jobs() {
+export default async function Jobs({
+  searchParams,
+}: {
+  searchParams: Promise<{ job?: string }>;
+}) {
   await requirePermission('ai:generate');
-
+  const { job: selectedJobId } = await searchParams;
   const jobs = await db.generationJob.findMany({
     take: 50,
     orderBy: { createdAt: 'desc' },
@@ -11,39 +18,53 @@ export default async function Jobs() {
 
   return (
     <>
-      <h1 style={{ fontSize: '2.5rem' }}>AI generation jobs</h1>
+      <div className="builder-page-heading">
+        <div>
+          <h1 style={{ fontSize: '2.5rem' }}>AI generation jobs</h1>
+          <p className="muted">Output luôn được lưu để xem trước trước khi áp dụng vào nội dung thật.</p>
+        </div>
+        <Link className="btn" href="/admin/generate">+ Generation mới</Link>
+      </div>
 
-      {jobs.map((job) => (
-        <article className="card" key={job.id}>
-          <span className="status">{job.status}</span>
-          <h3>
-            {job.kind} · {job.model}
-          </h3>
-          <p>{job.userPrompt}</p>
+      <div className="grid">
+        {jobs.map((job) => (
+          <article className={job.id === selectedJobId ? 'card selected-job' : 'card'} key={job.id}>
+            <div className="builder-row">
+              <div>
+                <span className="status">{job.status}</span>
+                <h3>{job.kind} · {job.model}</h3>
+              </div>
+              <small>{job.createdAt.toLocaleString('vi')}</small>
+            </div>
+            <p>{job.userPrompt}</p>
 
-          {job.errorMessage && (
-            <>
-              <p>⛔ {job.errorMessage}</p>
-              <details>
-                <summary>Chi tiết kỹ thuật</summary>
-                <code>{job.errorCode}</code>
+            {job.errorMessage && (
+              <>
+                <p className="error-text">⛔ {job.errorMessage}</p>
+                <details><summary>Chi tiết kỹ thuật</summary><code>{job.errorCode}</code></details>
+              </>
+            )}
+
+            {job.outputSnapshot && (
+              <details open={job.id === selectedJobId}>
+                <summary><b>Xem output có cấu trúc</b></summary>
+                <pre className="code-block"><code>{JSON.stringify(job.outputSnapshot, null, 2)}</code></pre>
               </details>
-            </>
-          )}
+            )}
 
-          {job.outputSnapshot && (
-            <details>
-              <summary>Output có thể chỉnh sửa</summary>
-              <pre style={{ whiteSpace: 'pre-wrap' }}>
-                {JSON.stringify(job.outputSnapshot, null, 2)}
-              </pre>
-            </details>
-          )}
-
-          <small>Thử lại: {job.retryCount}</small>
-        </article>
-      ))}
-
+            <div className="builder-row">
+              <small>Thử lại: {job.retryCount}</small>
+              {job.status === 'SUCCEEDED' && job.outputSnapshot && !job.targetEntityId && job.kind !== 'LESSON' && (
+                <form action={applyGenerationJob}>
+                  <input type="hidden" name="jobId" value={job.id} />
+                  <button className="btn">Áp dụng output</button>
+                </form>
+              )}
+              {job.targetEntityId && <span className="status">Đã áp dụng · {job.targetEntityId}</span>}
+            </div>
+          </article>
+        ))}
+      </div>
       {!jobs.length && <div className="card muted">Chưa có job.</div>}
     </>
   );
