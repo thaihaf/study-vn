@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import './mvp.css';
+import './visual-refresh.css';
 import { Header } from '@/components/shared/header';
 
 export const metadata: Metadata = {
