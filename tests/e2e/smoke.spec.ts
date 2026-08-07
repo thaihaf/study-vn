@@ -5,7 +5,9 @@ const adminPassword = process.env.SEED_ADMIN_PASSWORD;
 const learnerPassword = process.env.SEED_LEARNER_PASSWORD;
 
 if (!adminEmail || !adminPassword || !learnerPassword) {
-  throw new Error('Missing deterministic E2E credential environment variables.');
+  throw new Error(
+    'Missing deterministic E2E credential environment variables.',
+  );
 }
 
 test.describe.configure({ retries: 0 });
