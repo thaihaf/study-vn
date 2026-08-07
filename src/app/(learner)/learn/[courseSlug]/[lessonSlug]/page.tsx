@@ -108,18 +108,32 @@ export default async function Learn({
       </nav>
 
       <article className="lesson-content">
-        <span className="status">
-          {lesson.moduleTitle} · Bài {lessonIndex + 1}/{lessons.length}
-        </span>
-        <h1 style={{ fontSize: '2.5rem' }}>{lesson.title}</h1>
-        {lesson.description && (
-          <p className="muted lead">{lesson.description}</p>
-        )}
+        <header style={{ marginBottom: '2rem' }}>
+          <span className="status">
+            {lesson.moduleTitle} · Bài {lessonIndex + 1}/{lessons.length}
+          </span>
+          <h1
+            style={{
+              fontSize: 'clamp(2.4rem, 5vw, 3.5rem)',
+              lineHeight: 1.05,
+              margin: '1rem 0 1.15rem',
+              letterSpacing: '-0.045em',
+            }}
+          >
+            {lesson.title}
+          </h1>
+          {lesson.description && (
+            <p className="muted lead" style={{ margin: 0 }}>
+              {lesson.description}
+            </p>
+          )}
+        </header>
+
         {Array.isArray(lesson.learningObjectives) &&
           lesson.learningObjectives.length > 0 && (
-            <section className="card">
+            <section className="card" style={{ marginBottom: '2rem' }}>
               <b>Mục tiêu bài học</b>
-              <ul>
+              <ul style={{ marginBottom: 0 }}>
                 {lesson.learningObjectives.map((objective, index) => (
                   <li key={index}>{String(objective)}</li>
                 ))}
