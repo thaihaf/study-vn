@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { SubmitButton } from '@/components/ui/submit-button';
 import { resetPassword } from '@/modules/auth/password-actions';
 
 export default async function ResetPassword({
@@ -34,6 +35,7 @@ export default async function ResetPassword({
             name="password"
             type="password"
             minLength={12}
+            maxLength={128}
             required
             autoComplete="new-password"
           />
@@ -45,12 +47,13 @@ export default async function ResetPassword({
             name="confirmPassword"
             type="password"
             minLength={12}
+            maxLength={128}
             required
             autoComplete="new-password"
           />
         </label>
         <p className="muted">Tối thiểu 12 ký tự.</p>
-        <button className="btn">Đổi mật khẩu</button>
+        <SubmitButton idleLabel="Đổi mật khẩu" pendingLabel="Đang đổi mật khẩu…" />
       </form>
     </div>
   );
