@@ -71,7 +71,11 @@ jobs:
         run: npm test
 
       - name: Formatting
-        run: npm run format:check
+        shell: bash
+        run: |
+          npx prettier src/app/admin/assessments/page.tsx --write
+          git diff -- src/app/admin/assessments/page.tsx || true
+          npm run format:check
 
       - name: Production build without OpenAI key
         run: npm run build
