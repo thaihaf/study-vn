@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 
 import { restore, submitReview } from '@/app/actions';
 import { CourseBuilder } from '@/components/admin/course-builder';
+import { ActionRedirectForm } from '@/components/shared/action-redirect-form';
 import { ConfirmButton } from '@/components/shared/confirm-button';
 import { ServerActionButton } from '@/components/shared/server-action-button';
 import { db } from '@/lib/db';
@@ -143,7 +144,7 @@ export default async function Editor({
             {can(user.role, 'course:publish', user.canPublish) &&
               !validation.errors.length &&
               !course.archivedAt && (
-                <form action={publishCourseVersion}>
+                <ActionRedirectForm action={publishCourseVersion}>
                   <input
                     type="hidden"
                     name="versionId"
@@ -158,7 +159,7 @@ export default async function Editor({
                   <small className="muted">
                     Phiên bản công khai hiện tại sẽ được lưu trữ.
                   </small>
-                </form>
+                </ActionRedirectForm>
               )}
           </div>
         </section>
