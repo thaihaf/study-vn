@@ -45,11 +45,12 @@ test('admin publishes content and learner completes the core journey', async ({
   await expect(page).toHaveURL(/\/admin(?:$|\/)/);
 
   await page.goto('/admin/courses/new');
-  await page.getByLabel('Tên khóa học').fill(courseTitle);
+  await page.getByText('Tạo bản nháp thủ công, không dùng AI').click();
+  await page.getByLabel('Tên khóa học', { exact: true }).fill(courseTitle);
   await page
-    .getByLabel('Mô tả ngắn')
+    .getByLabel('Mô tả ngắn', { exact: true })
     .fill('Khóa học được tạo tự động để kiểm tra luồng xuất bản đầu cuối.');
-  await page.getByLabel('Danh mục').fill('Kiểm thử');
+  await page.getByLabel('Danh mục', { exact: true }).fill('Kiểm thử');
   await page.getByRole('button', { name: 'Tạo bản nháp' }).click();
   await expect(page).toHaveURL(/\/admin\/courses\/.+\/edit/);
   await expect(page.getByText('Không có lỗi chặn xuất bản.')).toBeVisible();
