@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 import { db } from '@/lib/db';
@@ -16,4 +17,6 @@ export async function publishCourseVersion(form: FormData) {
   revalidatePath('/admin/courses');
   revalidatePath('/explore');
   revalidatePath('/');
+
+  redirect(`/admin/courses/${published.courseId}/edit?published=1`);
 }
