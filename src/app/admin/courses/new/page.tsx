@@ -21,9 +21,9 @@ export default async function NewCourse() {
           <span className="status">AI + TÀI LIỆU</span>
           <h2>Tạo khóa học từ tài liệu</h2>
           <p className="muted">
-            Hỗ trợ TXT, Markdown, PDF và DOCX. Có thể chọn tối đa 3 tệp, tổng dung
-            lượng tối đa 5 MB. Tài liệu sẽ được trích xuất, chia thành các đoạn
-            và dùng làm nguồn cho AI.
+            Hỗ trợ TXT, Markdown, PDF và DOCX. Có thể chọn tối đa 3 tệp, tổng
+            dung lượng tối đa 5 MB. Tài liệu sẽ được trích xuất, chia thành các
+            đoạn và dùng làm nguồn cho AI.
           </p>
         </div>
 
