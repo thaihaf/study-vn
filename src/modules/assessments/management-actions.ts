@@ -269,7 +269,7 @@ export async function createAssessment(form: FormData) {
       entityId: assessment.id,
     },
   });
-  redirect(assessmentPath(assessment.id, true));
+  return { redirectTo: assessmentPath(assessment.id, true) };
 }
 
 export async function updateAssessment(form: FormData) {
@@ -289,7 +289,7 @@ export async function updateAssessment(form: FormData) {
       entityId: input.assessmentId,
     },
   });
-  redirect(assessmentPath(input.assessmentId));
+  return { redirectTo: assessmentPath(input.assessmentId) };
 }
 
 export async function addQuestionToAssessment(form: FormData) {
@@ -309,7 +309,7 @@ export async function addQuestionToAssessment(form: FormData) {
     update: {},
     create: { ...input, position },
   });
-  redirect(assessmentPath(input.assessmentId));
+  return { redirectTo: assessmentPath(input.assessmentId) };
 }
 
 export async function removeQuestionFromAssessment(form: FormData) {
@@ -339,7 +339,7 @@ export async function removeQuestionFromAssessment(form: FormData) {
       data: { position },
     });
   }
-  redirect(assessmentPath(input.assessmentId));
+  return { redirectTo: assessmentPath(input.assessmentId) };
 }
 
 export async function moveAssessmentQuestion(form: FormData) {
@@ -362,7 +362,7 @@ export async function moveAssessmentQuestion(form: FormData) {
   const index = rows.findIndex((row) => row.questionId === input.questionId);
   const targetIndex = input.direction === 'up' ? index - 1 : index + 1;
   if (index < 0 || targetIndex < 0 || targetIndex >= rows.length) {
-    redirect(assessmentPath(input.assessmentId));
+    return { redirectTo: assessmentPath(input.assessmentId) };
   }
   const next = [...rows];
   [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
@@ -381,7 +381,7 @@ export async function moveAssessmentQuestion(form: FormData) {
       data: { position },
     });
   }
-  redirect(assessmentPath(input.assessmentId));
+  return { redirectTo: assessmentPath(input.assessmentId) };
 }
 
 export async function toggleAssessmentPublished(form: FormData) {
@@ -408,5 +408,5 @@ export async function toggleAssessmentPublished(form: FormData) {
       entityId: id,
     },
   });
-  redirect(assessmentPath(id));
+  return { redirectTo: assessmentPath(id) };
 }
