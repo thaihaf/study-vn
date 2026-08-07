@@ -11,7 +11,13 @@ export default function Register() {
         </label>
         <label className="label">
           Email
-          <input className="input" name="email" type="email" required autoComplete="email" />
+          <input
+            className="input"
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+          />
         </label>
         <label className="label">
           Mật khẩu (từ 12 ký tự)
