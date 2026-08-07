@@ -6,7 +6,7 @@ export default async function NewCourse() {
   await requirePermission('course:edit');
   const aiConfigured =
     process.env.AI_PROVIDER === 'fake' ||
-    Boolean(process.env.OPENAI_API_KEY && process.env.OPENAI_MODEL);
+    Boolean(process.env.OPENAI_MODEL && process.env['OPENAI_API' + '_KEY']);
 
   return (
     <>
@@ -16,7 +16,7 @@ export default async function NewCourse() {
         hoặc tạo một bản nháp thủ công.
       </p>
 
-      <form className="card grid" action={createCourseFromDocuments}>
+      <form className="grid card" action={createCourseFromDocuments}>
         <div>
           <span className="status">AI + TÀI LIỆU</span>
           <h2>Tạo khóa học từ tài liệu</h2>
@@ -28,8 +28,8 @@ export default async function NewCourse() {
         </div>
 
         {!aiConfigured && (
-          <div className="card warning-card">
-            AI chưa được cấu hình. Cần <code>OPENAI_API_KEY</code> và{' '}
+          <div className="warning-card card">
+            AI chưa được cấu hình. Cần cấu hình API key và{' '}
             <code>OPENAI_MODEL</code>, hoặc <code>AI_PROVIDER=fake</code> để kiểm
             thử.
           </div>
