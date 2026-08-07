@@ -26,9 +26,10 @@ async function deliverReset(email: string, resetUrl: string) {
     if (!response.ok) throw new Error('PASSWORD_RESET_DELIVERY_FAILED');
     return;
   }
-
   if (process.env.NODE_ENV !== 'production') {
-    console.info(JSON.stringify({ event: 'password_reset_link', email, resetUrl }));
+    console.info(
+      JSON.stringify({ event: 'password_reset_link', email, resetUrl }),
+    );
   }
 }
 
@@ -36,6 +37,14 @@ export async function requestPasswordReset(form: FormData) {
   const email = emailSchema.parse(form.get('email')).toLowerCase();
   const user = await db.user.findUnique({ where: { email } });
   if (!user) redirect('/forgot-password?sent=1');
+
+  const recent = await db.passwordResetToken.count({
+    where: {
+      userId: user.id,
+      createdAt: { gte: new Date(Date.now() - 15 * 60 * 1000) },
+    },
+  });
+  if (recent >= 3) redirect('/forgot-password?sent=1');
 
   await db.passwordResetToken.deleteMany({
     where: { userId: user.id, usedAt: null },
@@ -62,9 +71,7 @@ export async function resetPassword(form: FormData) {
   if (password !== confirmation) throw new Error('PASSWORDS_DO_NOT_MATCH');
 
   const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-  const record = await db.passwordResetToken.findUnique({
-    where: { tokenHash },
-  });
+  const record = await db.passwordResetToken.findUnique({ where: { tokenHash } });
   if (!record || record.usedAt || record.expiresAt <= new Date()) {
     throw new Error('RESET_TOKEN_INVALID_OR_EXPIRED');
   }
@@ -79,6 +86,14 @@ export async function resetPassword(form: FormData) {
       data: { usedAt: new Date() },
     }),
     db.session.deleteMany({ where: { userId: record.userId } }),
+    db.auditLog.create({
+      data: {
+        actorId: record.userId,
+        action: 'PASSWORD_RESET_COMPLETED',
+        entityType: 'User',
+        entityId: record.userId,
+      },
+    }),
   ]);
 
   redirect('/login?reset=1');
