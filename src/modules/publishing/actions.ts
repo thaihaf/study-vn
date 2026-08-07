@@ -16,6 +16,4 @@ export async function publishCourseVersion(form: FormData) {
   revalidatePath('/admin/courses');
   revalidatePath('/explore');
   revalidatePath('/');
-
-  return { courseId: published.courseId };
 }
