@@ -1,6 +1,6 @@
 import { LessonGenerationPanel } from '@/components/admin/lesson-generation-panel';
 import { db } from '@/lib/db';
-import { runGeneration } from '@/modules/ai/actions';
+import { runRateLimitedGeneration } from '@/modules/ai/rate-limited-actions';
 import { requirePermission } from '@/modules/auth/session';
 
 export default async function Generate() {
@@ -24,7 +24,7 @@ export default async function Generate() {
           kiểm thử.
         </div>
       )}
-      <form className="card grid" action={runGeneration}>
+      <form className="card grid" action={runRateLimitedGeneration}>
         <label className="label">
           Yêu cầu tự do
           <textarea
