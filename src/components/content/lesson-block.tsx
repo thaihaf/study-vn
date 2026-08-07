@@ -35,7 +35,14 @@ export function LessonBlockView({
     case 'HEADING': {
       const text = String(content.text ?? '');
       const level = Number(content.level ?? 2);
-      body = level === 4 ? <h4>{text}</h4> : level === 3 ? <h3>{text}</h3> : <h2>{text}</h2>;
+      body =
+        level === 4 ? (
+          <h4>{text}</h4>
+        ) : level === 3 ? (
+          <h3>{text}</h3>
+        ) : (
+          <h2>{text}</h2>
+        );
       break;
     }
     case 'PARAGRAPH':
@@ -79,7 +86,9 @@ export function LessonBlockView({
       body = <MermaidBlock code={String(content.mermaid ?? '')} />;
       break;
     case 'TABLE': {
-      const headers = Array.isArray(content.headers) ? content.headers.map(String) : [];
+      const headers = Array.isArray(content.headers)
+        ? content.headers.map(String)
+        : [];
       const rows = Array.isArray(content.rows)
         ? content.rows.map((row) => (Array.isArray(row) ? row.map(String) : []))
         : [];
@@ -87,12 +96,18 @@ export function LessonBlockView({
         <div className="table-scroll">
           <table className="content-table">
             <thead>
-              <tr>{headers.map((header, index) => <th key={`${header}-${index}`}>{header}</th>)}</tr>
+              <tr>
+                {headers.map((header, index) => (
+                  <th key={`${header}-${index}`}>{header}</th>
+                ))}
+              </tr>
             </thead>
             <tbody>
               {rows.map((row, rowIndex) => (
                 <tr key={rowIndex}>
-                  {row.map((cell, cellIndex) => <td key={cellIndex}>{cell}</td>)}
+                  {row.map((cell, cellIndex) => (
+                    <td key={cellIndex}>{cell}</td>
+                  ))}
                 </tr>
               ))}
             </tbody>
@@ -105,8 +120,14 @@ export function LessonBlockView({
       body = (
         <figure className="lesson-image">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={String(content.url ?? '')} alt={String(content.alt ?? '')} loading="lazy" />
-          {content.caption ? <figcaption className="muted">{String(content.caption)}</figcaption> : null}
+          <img
+            src={String(content.url ?? '')}
+            alt={String(content.alt ?? '')}
+            loading="lazy"
+          />
+          {content.caption ? (
+            <figcaption className="muted">{String(content.caption)}</figcaption>
+          ) : null}
         </figure>
       );
       break;
@@ -115,7 +136,10 @@ export function LessonBlockView({
         <div className="card">
           <b>Bài luyện liên quan</b>
           <p className="muted">Kiểm tra nhanh kiến thức của bài học.</p>
-          <Link className="btn secondary" href={`/assessments/${String(content.assessmentId ?? '')}`}>
+          <Link
+            className="btn secondary"
+            href={`/assessments/${String(content.assessmentId ?? '')}`}
+          >
             Mở bài luyện
           </Link>
         </div>
@@ -123,7 +147,10 @@ export function LessonBlockView({
       break;
     case 'FLASHCARD_SET': {
       const cards = Array.isArray(content.cards)
-        ? content.cards.filter((item): item is Record<string, unknown> => typeof item === 'object' && item !== null)
+        ? content.cards.filter(
+            (item): item is Record<string, unknown> =>
+              typeof item === 'object' && item !== null,
+          )
         : [];
       body = (
         <div className="flashcard-grid">
@@ -138,24 +165,67 @@ export function LessonBlockView({
       break;
     }
     case 'SCENARIO':
-      body = <div className="card scenario-block"><b>Tình huống</b><p>{String(content.prompt ?? '')}</p></div>;
+      body = (
+        <div className="card scenario-block">
+          <b>Tình huống</b>
+          <p>{String(content.prompt ?? '')}</p>
+        </div>
+      );
       break;
     case 'ESSAY_PROMPT':
-      body = <div className="card"><b>Đề tự luận</b><p>{String(content.prompt ?? '')}</p><Link className="btn secondary" href="/practice">Luyện tập →</Link></div>;
+      body = (
+        <div className="card">
+          <b>Đề tự luận</b>
+          <p>{String(content.prompt ?? '')}</p>
+          <Link className="btn secondary" href="/practice">
+            Luyện tập →
+          </Link>
+        </div>
+      );
       break;
     case 'INTERVIEW_QUESTION':
-      body = <div className="card"><b>Câu hỏi phỏng vấn</b><p>{String(content.question ?? '')}</p><Link className="btn secondary" href="/interviews">Luyện trả lời →</Link></div>;
+      body = (
+        <div className="card">
+          <b>Câu hỏi phỏng vấn</b>
+          <p>{String(content.question ?? '')}</p>
+          <Link className="btn secondary" href="/interviews">
+            Luyện trả lời →
+          </Link>
+        </div>
+      );
       break;
     case 'SOURCE_REFERENCE':
-      body = <div className="card source-reference"><b>Tài liệu tham khảo</b><p className="muted">Các nguồn được dùng để xây dựng nội dung này được liệt kê bên dưới.</p></div>;
+      body = (
+        <div className="card source-reference">
+          <b>Tài liệu tham khảo</b>
+          <p className="muted">
+            Các nguồn được dùng để xây dựng nội dung này được liệt kê bên dưới.
+          </p>
+        </div>
+      );
       break;
     case 'SUMMARY': {
-      const items = Array.isArray(content.items) ? content.items.map(String) : [];
-      body = <div className="card summary-block"><b>Tóm tắt</b><ul>{items.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul></div>;
+      const items = Array.isArray(content.items)
+        ? content.items.map(String)
+        : [];
+      body = (
+        <div className="card summary-block">
+          <b>Tóm tắt</b>
+          <ul>
+            {items.map((item, index) => (
+              <li key={`${item}-${index}`}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      );
       break;
     }
     default:
-      body = <pre className="code-block"><code>{JSON.stringify(contentJson, null, 2)}</code></pre>;
+      body = (
+        <pre className="code-block">
+          <code>{JSON.stringify(contentJson, null, 2)}</code>
+        </pre>
+      );
   }
 
   return (
@@ -167,7 +237,8 @@ export function LessonBlockView({
           <ul>
             {citations.map((citation) => (
               <li key={citation.chunk.id}>
-                {citation.chunk.source.title} · đoạn {citation.chunk.position + 1}
+                {citation.chunk.source.title} · đoạn{' '}
+                {citation.chunk.position + 1}
                 {citation.chunk.section ? ` · ${citation.chunk.section}` : ''}
               </li>
             ))}

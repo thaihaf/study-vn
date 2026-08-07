@@ -95,7 +95,9 @@ export default async function Sources({
               </p>
             );
           })}
-          {!searchResults.length && <p className="muted">Không tìm thấy chunk phù hợp.</p>}
+          {!searchResults.length && (
+            <p className="muted">Không tìm thấy chunk phù hợp.</p>
+          )}
         </section>
       )}
 
@@ -201,8 +203,9 @@ export default async function Sources({
               </div>
             </div>
             <p>
-              {source.originalFilename} · {source.size.toLocaleString('vi')} byte ·{' '}
-              {source.chunks.length} chunk · độ tin cậy {source.reliabilityLevel}/5
+              {source.originalFilename} · {source.size.toLocaleString('vi')}{' '}
+              byte · {source.chunks.length} chunk · độ tin cậy{' '}
+              {source.reliabilityLevel}/5
             </p>
             <p className="muted">
               {source.author || 'Không rõ tác giả'}
@@ -272,7 +275,11 @@ export default async function Sources({
               </summary>
               <div className="grid">
                 {source.chunks.map((chunk) => (
-                  <form className="card inset-card grid" action={updateSourceChunk} key={chunk.id}>
+                  <form
+                    className="card inset-card grid"
+                    action={updateSourceChunk}
+                    key={chunk.id}
+                  >
                     <input type="hidden" name="chunkId" value={chunk.id} />
                     <b>Đoạn #{chunk.position + 1}</b>
                     <div className="builder-two-cols">
@@ -305,7 +312,9 @@ export default async function Sources({
                         required
                       />
                     </label>
-                    <button className="btn secondary compact">Lưu correction</button>
+                    <button className="btn secondary compact">
+                      Lưu correction
+                    </button>
                   </form>
                 ))}
               </div>

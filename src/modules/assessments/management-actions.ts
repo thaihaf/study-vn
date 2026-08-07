@@ -52,7 +52,8 @@ async function resolveBankAndTopic(bankTitle: string, topicName: string) {
     const base = slugify(topicLabel) || 'chu-de';
     let slug = base;
     let suffix = 2;
-    while (await db.topic.findUnique({ where: { slug } })) slug = `${base}-${suffix++}`;
+    while (await db.topic.findUnique({ where: { slug } }))
+      slug = `${base}-${suffix++}`;
     topic = await db.topic.create({ data: { name: topicLabel, slug } });
   }
   return { bank, topic };
@@ -88,7 +89,10 @@ function validateChoices(
 ) {
   questionInput.parse({
     type,
-    choices: choices.map((choice, index) => ({ id: String(index + 1), ...choice })),
+    choices: choices.map((choice, index) => ({
+      id: String(index + 1),
+      ...choice,
+    })),
     referenceAnswer: referenceAnswer || null,
   });
 }
@@ -98,7 +102,10 @@ export async function createQuestion(form: FormData) {
   const raw = questionFormSchema.parse(Object.fromEntries(form));
   const choices = parseChoices(raw.type, raw.choices);
   validateChoices(raw.type, choices, raw.referenceAnswer);
-  const { bank, topic } = await resolveBankAndTopic(raw.bankTitle, raw.topicName);
+  const { bank, topic } = await resolveBankAndTopic(
+    raw.bankTitle,
+    raw.topicName,
+  );
   const question = await db.question.create({
     data: {
       bankId: bank.id,
@@ -112,7 +119,12 @@ export async function createQuestion(form: FormData) {
       status: raw.status,
       authorId: user.id,
       choices: choices.length
-        ? { create: choices.map((choice, position) => ({ ...choice, position })) }
+        ? {
+            create: choices.map((choice, position) => ({
+              ...choice,
+              position,
+            })),
+          }
         : undefined,
     },
   });
@@ -134,9 +146,14 @@ export async function updateQuestion(form: FormData) {
     .parse(Object.fromEntries(form));
   const choices = parseChoices(raw.type, raw.choices);
   validateChoices(raw.type, choices, raw.referenceAnswer);
-  const { bank, topic } = await resolveBankAndTopic(raw.bankTitle, raw.topicName);
+  const { bank, topic } = await resolveBankAndTopic(
+    raw.bankTitle,
+    raw.topicName,
+  );
   await db.$transaction(async (tx) => {
-    await tx.questionChoice.deleteMany({ where: { questionId: raw.questionId } });
+    await tx.questionChoice.deleteMany({
+      where: { questionId: raw.questionId },
+    });
     await tx.question.update({
       where: { id: raw.questionId },
       data: {
@@ -150,7 +167,12 @@ export async function updateQuestion(form: FormData) {
         rubricJson: parseRubric(raw.rubric) ?? Prisma.DbNull,
         status: raw.status,
         choices: choices.length
-          ? { create: choices.map((choice, position) => ({ ...choice, position })) }
+          ? {
+              create: choices.map((choice, position) => ({
+                ...choice,
+                position,
+              })),
+            }
           : undefined,
       },
     });
@@ -196,7 +218,9 @@ const assessmentFormSchema = z.object({
   maximumAttempts: z.coerce.number().int().positive().optional(),
   randomizeQuestions: z.enum(['on']).optional(),
   randomizeChoices: z.enum(['on']).optional(),
-  feedbackMode: z.enum(['NEVER', 'AFTER_SUBMISSION', 'AFTER_PASS']).default('AFTER_SUBMISSION'),
+  feedbackMode: z
+    .enum(['NEVER', 'AFTER_SUBMISSION', 'AFTER_PASS'])
+    .default('AFTER_SUBMISSION'),
 });
 
 function assessmentData(input: z.infer<typeof assessmentFormSchema>) {
@@ -217,7 +241,9 @@ function assessmentData(input: z.infer<typeof assessmentFormSchema>) {
 export async function createAssessment(form: FormData) {
   const user = await requirePermission('course:edit');
   const input = assessmentFormSchema.parse(Object.fromEntries(form));
-  const assessment = await db.assessment.create({ data: assessmentData(input) });
+  const assessment = await db.assessment.create({
+    data: assessmentData(input),
+  });
   await db.auditLog.create({
     data: {
       actorId: user.id,
@@ -254,9 +280,13 @@ export async function addQuestionToAssessment(form: FormData) {
   const input = z
     .object({ assessmentId: z.string(), questionId: z.string() })
     .parse(Object.fromEntries(form));
-  const assessment = await db.assessment.findUniqueOrThrow({ where: { id: input.assessmentId } });
+  const assessment = await db.assessment.findUniqueOrThrow({
+    where: { id: input.assessmentId },
+  });
   if (assessment.published) throw new Error('UNPUBLISH_BEFORE_EDITING');
-  const position = await db.assessmentQuestion.count({ where: { assessmentId: input.assessmentId } });
+  const position = await db.assessmentQuestion.count({
+    where: { assessmentId: input.assessmentId },
+  });
   await db.assessmentQuestion.upsert({
     where: { assessmentId_questionId: input },
     update: {},
@@ -270,9 +300,13 @@ export async function removeQuestionFromAssessment(form: FormData) {
   const input = z
     .object({ assessmentId: z.string(), questionId: z.string() })
     .parse(Object.fromEntries(form));
-  const assessment = await db.assessment.findUniqueOrThrow({ where: { id: input.assessmentId } });
+  const assessment = await db.assessment.findUniqueOrThrow({
+    where: { id: input.assessmentId },
+  });
   if (assessment.published) throw new Error('UNPUBLISH_BEFORE_EDITING');
-  await db.assessmentQuestion.delete({ where: { assessmentId_questionId: input } });
+  await db.assessmentQuestion.delete({
+    where: { assessmentId_questionId: input },
+  });
   const rows = await db.assessmentQuestion.findMany({
     where: { assessmentId: input.assessmentId },
     orderBy: { position: 'asc' },
@@ -300,7 +334,9 @@ export async function moveAssessmentQuestion(form: FormData) {
       direction: z.enum(['up', 'down']),
     })
     .parse(Object.fromEntries(form));
-  const assessment = await db.assessment.findUniqueOrThrow({ where: { id: input.assessmentId } });
+  const assessment = await db.assessment.findUniqueOrThrow({
+    where: { id: input.assessmentId },
+  });
   if (assessment.published) throw new Error('UNPUBLISH_BEFORE_EDITING');
   const rows = await db.assessmentQuestion.findMany({
     where: { assessmentId: input.assessmentId },
@@ -346,7 +382,9 @@ export async function toggleAssessmentPublished(form: FormData) {
   await db.auditLog.create({
     data: {
       actorId: user.id,
-      action: assessment.published ? 'ASSESSMENT_UNPUBLISHED' : 'ASSESSMENT_PUBLISHED',
+      action: assessment.published
+        ? 'ASSESSMENT_UNPUBLISHED'
+        : 'ASSESSMENT_PUBLISHED',
       entityType: 'Assessment',
       entityId: id,
     },

@@ -5,7 +5,13 @@ services:
       POSTGRES_USER: study
       POSTGRES_PASSWORD: study
       POSTGRES_DB: study_vn
-    ports: ["5432:5432"]
+    ports: ['5432:5432']
     volumes: [study_data:/var/lib/postgresql/data]
-    healthcheck: {test: ["CMD-SHELL", "pg_isready -U study -d study_vn"], interval: 5s, timeout: 3s, retries: 10}
-volumes: {study_data: {}}
+    healthcheck:
+      {
+        test: ['CMD-SHELL', 'pg_isready -U study -d study_vn'],
+        interval: 5s,
+        timeout: 3s,
+        retries: 10,
+      }
+volumes: { study_data: {} }

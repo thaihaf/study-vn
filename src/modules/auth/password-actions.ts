@@ -11,7 +11,9 @@ const emailSchema = z.string().email();
 const passwordSchema = z.string().min(12).max(128);
 
 function baseUrl() {
-  return process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
+  return (
+    process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
+  );
 }
 
 async function deliverReset(email: string, resetUrl: string) {
@@ -71,7 +73,9 @@ export async function resetPassword(form: FormData) {
   if (password !== confirmation) throw new Error('PASSWORDS_DO_NOT_MATCH');
 
   const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-  const record = await db.passwordResetToken.findUnique({ where: { tokenHash } });
+  const record = await db.passwordResetToken.findUnique({
+    where: { tokenHash },
+  });
   if (!record || record.usedAt || record.expiresAt <= new Date()) {
     throw new Error('RESET_TOKEN_INVALID_OR_EXPIRED');
   }

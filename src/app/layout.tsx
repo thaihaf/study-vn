@@ -8,11 +8,17 @@ export const metadata: Metadata = {
   description: 'Nền tảng học theo lộ trình, tiếng Việt và tập trung.',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="vi">
       <body>
-        <a className="sr-only focus:not-sr-only" href="#main">Chuyển đến nội dung</a>
+        <a className="sr-only focus:not-sr-only" href="#main">
+          Chuyển đến nội dung
+        </a>
         <Header />
         <main id="main">{children}</main>
       </body>

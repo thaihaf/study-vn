@@ -37,7 +37,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="container page">
+      <section className="page container">
         <h2>Khóa học nổi bật</h2>
         <div
           className="grid"
@@ -56,14 +56,12 @@ export default async function Home() {
               </Link>
             ))
           ) : (
-            <div className="card muted">
-              Chưa có khóa học được xuất bản.
-            </div>
+            <div className="card muted">Chưa có khóa học được xuất bản.</div>
           )}
         </div>
       </section>
 
-      <section className="container page">
+      <section className="page container">
         <h2>Một nhịp học dễ duy trì</h2>
         <div
           className="grid"

@@ -226,8 +226,12 @@ export async function persistCourseBuilder(
     if (!existing) throw new Error('DRAFT_NOT_FOUND');
     if (existing.revision !== input.revision) throw new Error('CONFLICT');
 
-    const existingModules = new Map(existing.modules.map((item) => [item.id, item]));
-    const inputModuleIds = new Set(input.modules.flatMap((item) => (item.id ? [item.id] : [])));
+    const existingModules = new Map(
+      existing.modules.map((item) => [item.id, item]),
+    );
+    const inputModuleIds = new Set(
+      input.modules.flatMap((item) => (item.id ? [item.id] : [])),
+    );
 
     for (const id of inputModuleIds) {
       if (!existingModules.has(id)) throw new Error('INVALID_MODULE');
@@ -290,7 +294,9 @@ export async function persistCourseBuilder(
 
       const oldLessons = oldModule?.lessons ?? [];
       const oldLessonMap = new Map(oldLessons.map((item) => [item.id, item]));
-      const inputLessonIds = new Set(courseModule.lessons.flatMap((item) => (item.id ? [item.id] : [])));
+      const inputLessonIds = new Set(
+        courseModule.lessons.flatMap((item) => (item.id ? [item.id] : [])),
+      );
       for (const id of inputLessonIds) {
         if (!oldLessonMap.has(id)) throw new Error('INVALID_LESSON');
       }
@@ -338,13 +344,17 @@ export async function persistCourseBuilder(
 
         const oldBlocks = oldLesson?.blocks ?? [];
         const oldBlockMap = new Map(oldBlocks.map((item) => [item.id, item]));
-        const inputBlockIds = new Set(lesson.blocks.flatMap((item) => (item.id ? [item.id] : [])));
+        const inputBlockIds = new Set(
+          lesson.blocks.flatMap((item) => (item.id ? [item.id] : [])),
+        );
         for (const id of inputBlockIds) {
           if (!oldBlockMap.has(id)) throw new Error('INVALID_BLOCK');
         }
         for (const oldBlock of oldBlocks) {
           if (!inputBlockIds.has(oldBlock.id)) {
-            await transaction.lessonBlock.delete({ where: { id: oldBlock.id } });
+            await transaction.lessonBlock.delete({
+              where: { id: oldBlock.id },
+            });
           }
         }
 
@@ -384,9 +394,13 @@ export async function persistCourseBuilder(
             typeof block.contentJson === 'object' &&
             block.contentJson !== null &&
             'chunkIds' in block.contentJson &&
-            Array.isArray((block.contentJson as { chunkIds?: unknown }).chunkIds)
+            Array.isArray(
+              (block.contentJson as { chunkIds?: unknown }).chunkIds,
+            )
           ) {
-            const requested = (block.contentJson as { chunkIds: unknown[] }).chunkIds.filter(
+            const requested = (
+              block.contentJson as { chunkIds: unknown[] }
+            ).chunkIds.filter(
               (value): value is string => typeof value === 'string',
             );
             if (requested.length) {

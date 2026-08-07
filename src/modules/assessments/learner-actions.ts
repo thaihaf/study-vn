@@ -31,16 +31,23 @@ export async function startAssessment(form: FormData) {
     include: {
       questions: {
         orderBy: { position: 'asc' },
-        include: { question: { include: { choices: { orderBy: { position: 'asc' } } } } },
+        include: {
+          question: { include: { choices: { orderBy: { position: 'asc' } } } },
+        },
       },
     },
   });
   if (!assessment) throw new Error('NOT_FOUND');
 
-  const count = await db.assessmentAttempt.count({ where: { userId: user.id, assessmentId: id } });
-  if (assessment.maximumAttempts && count >= assessment.maximumAttempts) throw new Error('MAX_ATTEMPTS');
+  const count = await db.assessmentAttempt.count({
+    where: { userId: user.id, assessmentId: id },
+  });
+  if (assessment.maximumAttempts && count >= assessment.maximumAttempts)
+    throw new Error('MAX_ATTEMPTS');
 
-  const questionRows = assessment.randomizeQuestions ? shuffle(assessment.questions) : assessment.questions;
+  const questionRows = assessment.randomizeQuestions
+    ? shuffle(assessment.questions)
+    : assessment.questions;
   const attempt = await db.assessmentAttempt.create({
     data: {
       assessmentId: id,
@@ -48,18 +55,27 @@ export async function startAssessment(form: FormData) {
       snapshots: {
         create: questionRows.map((assessmentQuestion, position) => {
           const question = assessmentQuestion.question;
-          const sourceChoices = assessment.randomizeChoices ? shuffle(question.choices) : question.choices;
+          const sourceChoices = assessment.randomizeChoices
+            ? shuffle(question.choices)
+            : question.choices;
           const correctAnswer =
             question.type === 'MULTIPLE_CHOICE'
-              ? question.choices.filter((choice) => choice.isCorrect).map((choice) => choice.id)
-              : question.type === 'SHORT_TEXT' || ['ESSAY', 'CODE_REVIEW', 'SCENARIO'].includes(question.type)
-                ? question.referenceAnswer ?? ''
-                : question.choices.find((choice) => choice.isCorrect)?.id ?? '';
+              ? question.choices
+                  .filter((choice) => choice.isCorrect)
+                  .map((choice) => choice.id)
+              : question.type === 'SHORT_TEXT' ||
+                  ['ESSAY', 'CODE_REVIEW', 'SCENARIO'].includes(question.type)
+                ? (question.referenceAnswer ?? '')
+                : (question.choices.find((choice) => choice.isCorrect)?.id ??
+                  '');
           return {
             questionId: question.id,
             prompt: question.prompt,
             type: question.type,
-            choicesJson: sourceChoices.map((choice) => ({ id: choice.id, text: choice.text })),
+            choicesJson: sourceChoices.map((choice) => ({
+              id: choice.id,
+              text: choice.text,
+            })),
             rubricJson: question.rubricJson ?? undefined,
             explanation: question.explanation,
             correctAnswerJson: asJson(correctAnswer),
@@ -88,10 +104,16 @@ export async function submitAssessment(form: FormData) {
   await db.$transaction(async (transaction) => {
     for (const snapshot of attempt.snapshots) {
       const fieldName = `answer_${snapshot.id}`;
-      const answer = snapshot.type === 'MULTIPLE_CHOICE'
-        ? form.getAll(fieldName).filter((value): value is string => typeof value === 'string')
-        : String(form.get(fieldName) ?? '');
-      const result = grade({ type: snapshot.type, correctAnswerJson: snapshot.correctAnswerJson }, answer);
+      const answer =
+        snapshot.type === 'MULTIPLE_CHOICE'
+          ? form
+              .getAll(fieldName)
+              .filter((value): value is string => typeof value === 'string')
+          : String(form.get(fieldName) ?? '');
+      const result = grade(
+        { type: snapshot.type, correctAnswerJson: snapshot.correctAnswerJson },
+        answer,
+      );
       results.push({ questionId: snapshot.questionId, result });
       if (result !== null) {
         graded += 1;
@@ -126,19 +148,39 @@ export async function submitAssessment(form: FormData) {
       const question = byId.get(item.questionId);
       if (item.result === null || !question?.topicId) continue;
       const previous = await transaction.topicProficiency.findUnique({
-        where: { userId_topicId: { userId: user.id, topicId: question.topicId } },
+        where: {
+          userId_topicId: { userId: user.id, topicId: question.topicId },
+        },
       });
       const nextCorrect = (previous?.correct ?? 0) + (item.result ? 1 : 0);
       const nextTotal = (previous?.total ?? 0) + 1;
       await transaction.topicProficiency.upsert({
-        where: { userId_topicId: { userId: user.id, topicId: question.topicId } },
-        create: { userId: user.id, topicId: question.topicId, correct: nextCorrect, total: nextTotal, score: (nextCorrect / nextTotal) * 100 },
-        update: { correct: nextCorrect, total: nextTotal, score: (nextCorrect / nextTotal) * 100 },
+        where: {
+          userId_topicId: { userId: user.id, topicId: question.topicId },
+        },
+        create: {
+          userId: user.id,
+          topicId: question.topicId,
+          correct: nextCorrect,
+          total: nextTotal,
+          score: (nextCorrect / nextTotal) * 100,
+        },
+        update: {
+          correct: nextCorrect,
+          total: nextTotal,
+          score: (nextCorrect / nextTotal) * 100,
+        },
       });
       if (!item.result) {
         await transaction.reviewItem.upsert({
-          where: { userId_questionId: { userId: user.id, questionId: item.questionId } },
-          create: { userId: user.id, questionId: item.questionId, dueAt: new Date() },
+          where: {
+            userId_questionId: { userId: user.id, questionId: item.questionId },
+          },
+          create: {
+            userId: user.id,
+            questionId: item.questionId,
+            dueAt: new Date(),
+          },
           update: { dueAt: new Date(), intervalDays: 1 },
         });
       }
@@ -156,8 +198,14 @@ export async function requestPracticeFeedback(form: FormData) {
     include: { attempt: { include: { snapshots: true } } },
   });
   if (!answer) throw new Error('NOT_FOUND');
-  const snapshot = answer.attempt.snapshots.find((item) => item.id === answer.snapshotId);
-  if (!snapshot || !['ESSAY', 'CODE_REVIEW', 'SCENARIO'].includes(snapshot.type)) throw new Error('FEEDBACK_NOT_SUPPORTED');
+  const snapshot = answer.attempt.snapshots.find(
+    (item) => item.id === answer.snapshotId,
+  );
+  if (
+    !snapshot ||
+    !['ESSAY', 'CODE_REVIEW', 'SCENARIO'].includes(snapshot.type)
+  )
+    throw new Error('FEEDBACK_NOT_SUPPORTED');
 
   const prompt = [
     `Câu hỏi: ${snapshot.prompt}`,
@@ -167,9 +215,17 @@ export async function requestPracticeFeedback(form: FormData) {
     'Hãy phản hồi cụ thể theo rubric; không đưa ra kết luận chính thức.',
   ].join('\n\n');
   const provider = getAIProvider();
-  const feedback = snapshot.type === 'SCENARIO'
-    ? await provider.evaluateInterviewAnswer({ prompt, language: 'vi', sources: [] })
-    : await provider.evaluateEssay({ prompt, language: 'vi', sources: [] });
-  await db.attemptAnswer.update({ where: { id: answer.id }, data: { feedbackJson: asJson(feedback) } });
+  const feedback =
+    snapshot.type === 'SCENARIO'
+      ? await provider.evaluateInterviewAnswer({
+          prompt,
+          language: 'vi',
+          sources: [],
+        })
+      : await provider.evaluateEssay({ prompt, language: 'vi', sources: [] });
+  await db.attemptAnswer.update({
+    where: { id: answer.id },
+    data: { feedbackJson: asJson(feedback) },
+  });
   revalidatePath(`/attempts/${answer.attemptId}/result`);
 }

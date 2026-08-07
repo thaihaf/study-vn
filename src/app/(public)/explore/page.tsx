@@ -14,7 +14,7 @@ export default async function Explore() {
   });
 
   return (
-    <div className="container page">
+    <div className="page container">
       <h1 style={{ fontSize: '2.6rem' }}>Khám phá lộ trình</h1>
       <p className="muted">
         Các khóa học đã qua quy trình biên tập và xuất bản.

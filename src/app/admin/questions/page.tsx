@@ -92,7 +92,11 @@ export default async function Page() {
           <div className="builder-two-cols">
             <label className="label">
               Loại
-              <select className="input" name="type" defaultValue="SINGLE_CHOICE">
+              <select
+                className="input"
+                name="type"
+                defaultValue="SINGLE_CHOICE"
+              >
                 {types.map((type) => (
                   <option key={type}>{type}</option>
                 ))}
@@ -117,7 +121,9 @@ export default async function Page() {
               className="input"
               name="choices"
               rows={6}
-              placeholder={'* Đáp án đúng\nĐáp án sai\n\nVới TRUE_FALSE: nhập Đúng hoặc Sai'}
+              placeholder={
+                '* Đáp án đúng\nĐáp án sai\n\nVới TRUE_FALSE: nhập Đúng hoặc Sai'
+              }
             />
           </label>
           <label className="label">
@@ -142,12 +148,14 @@ export default async function Page() {
             <div className="builder-row">
               <div>
                 <span className="status">
-                  {question.type} · {question.status} · độ khó {question.difficulty}
+                  {question.type} · {question.status} · độ khó{' '}
+                  {question.difficulty}
                 </span>
                 <h3>{question.prompt}</h3>
                 <p className="muted">
-                  {question.bank.title} · {question.topic?.name ?? 'Chưa gắn chủ đề'} · dùng
-                  trong {question.assessments.length} bài luyện
+                  {question.bank.title} ·{' '}
+                  {question.topic?.name ?? 'Chưa gắn chủ đề'} · dùng trong{' '}
+                  {question.assessments.length} bài luyện
                 </p>
               </div>
               {question.assessments.length === 0 && (
@@ -218,7 +226,11 @@ export default async function Page() {
                 <div className="builder-two-cols">
                   <label className="label">
                     Loại
-                    <select className="input" name="type" defaultValue={question.type}>
+                    <select
+                      className="input"
+                      name="type"
+                      defaultValue={question.type}
+                    >
                       {types.map((type) => (
                         <option key={type}>{type}</option>
                       ))}

@@ -10,7 +10,7 @@ export async function Header() {
 
   return (
     <header className="nav">
-      <nav className="container nav-inner" aria-label="Điều hướng chính">
+      <nav className="nav-inner container" aria-label="Điều hướng chính">
         <Link className="brand" href="/">
           ◉ {t('brand')}
         </Link>

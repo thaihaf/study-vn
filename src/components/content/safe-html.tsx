@@ -3,7 +3,13 @@
 import DOMPurify from 'dompurify';
 import { useMemo } from 'react';
 
-export function SafeHtml({ html, className }: { html: string; className?: string }) {
+export function SafeHtml({
+  html,
+  className,
+}: {
+  html: string;
+  className?: string;
+}) {
   const clean = useMemo(
     () =>
       DOMPurify.sanitize(html, {
@@ -14,5 +20,7 @@ export function SafeHtml({ html, className }: { html: string; className?: string
     [html],
   );
 
-  return <div className={className} dangerouslySetInnerHTML={{ __html: clean }} />;
+  return (
+    <div className={className} dangerouslySetInnerHTML={{ __html: clean }} />
+  );
 }

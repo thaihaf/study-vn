@@ -24,7 +24,7 @@ export default async function Page() {
   );
 
   return (
-    <div className="container page">
+    <div className="page container">
       <div className="builder-page-heading">
         <div>
           <h1 style={{ fontSize: '2.5rem' }}>Luyện tập</h1>
@@ -58,12 +58,15 @@ export default async function Page() {
             <h2>{assessment.title}</h2>
             <p>{assessment.description}</p>
             <small className="muted">
-              {assessment.questions.length} câu · điểm đạt {assessment.passScore}%
+              {assessment.questions.length} câu · điểm đạt{' '}
+              {assessment.passScore}%
             </small>
           </Link>
         ))}
         {!objective.length && (
-          <div className="card muted">Chưa có quiz hoặc thi thử được xuất bản.</div>
+          <div className="card muted">
+            Chưa có quiz hoặc thi thử được xuất bản.
+          </div>
         )}
       </div>
     </div>

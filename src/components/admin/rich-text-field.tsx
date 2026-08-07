@@ -35,7 +35,11 @@ export function RichTextField({
 
   return (
     <div className="rich-editor-shell">
-      <div className="editor-toolbar" role="toolbar" aria-label="Định dạng văn bản">
+      <div
+        className="editor-toolbar"
+        role="toolbar"
+        aria-label="Định dạng văn bản"
+      >
         <button
           className="btn secondary compact"
           type="button"

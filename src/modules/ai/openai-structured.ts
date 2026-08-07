@@ -46,5 +46,7 @@ export async function runStructured<T>({
 
 export function sourcePrompt(sources: Array<{ id: string; text: string }>) {
   if (!sources.length) return 'Không có tài liệu nguồn được chọn.';
-  return sources.map((source) => `[SOURCE:${source.id}]\n${source.text}`).join('\n\n---\n\n');
+  return sources
+    .map((source) => `[SOURCE:${source.id}]\n${source.text}`)
+    .join('\n\n---\n\n');
 }

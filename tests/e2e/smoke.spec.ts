@@ -1,3 +1,16 @@
-import {test,expect} from '@playwright/test';
-test('public landing, navigation and responsive auth',async({page})=>{await page.goto('/');await expect(page.getByRole('heading',{name:/Biến mục tiêu/})).toBeVisible();await page.getByRole('link',{name:'Khám phá khóa học'}).click();await expect(page).toHaveURL(/explore/);await page.goto('/register');await expect(page.getByLabel('Email')).toBeVisible();});
-test('health does not cache',async({request})=>{const response=await request.get('/api/health');expect([200,503]).toContain(response.status());expect(response.headers()['cache-control']).toBe('no-store');});
+import { test, expect } from '@playwright/test';
+test('public landing, navigation and responsive auth', async ({ page }) => {
+  await page.goto('/');
+  await expect(
+    page.getByRole('heading', { name: /Biến mục tiêu/ }),
+  ).toBeVisible();
+  await page.getByRole('link', { name: 'Khám phá khóa học' }).click();
+  await expect(page).toHaveURL(/explore/);
+  await page.goto('/register');
+  await expect(page.getByLabel('Email')).toBeVisible();
+});
+test('health does not cache', async ({ request }) => {
+  const response = await request.get('/api/health');
+  expect([200, 503]).toContain(response.status());
+  expect(response.headers()['cache-control']).toBe('no-store');
+});

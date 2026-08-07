@@ -78,7 +78,11 @@ function defaultBlock(
     case 'PARAGRAPH':
       return { html: '<p>Nội dung mới.</p>' };
     case 'CALLOUT':
-      return { title: 'Lưu ý', html: '<p>Nội dung cần chú ý.</p>', tone: 'info' };
+      return {
+        title: 'Lưu ý',
+        html: '<p>Nội dung cần chú ý.</p>',
+        tone: 'info',
+      };
     case 'EXAMPLE':
       return { title: 'Ví dụ', html: '<p>Ví dụ minh họa.</p>' };
     case 'CODE':
@@ -86,7 +90,10 @@ function defaultBlock(
     case 'DIAGRAM':
       return { mermaid: 'flowchart TD\n  A[Bắt đầu] --> B[Kết thúc]' };
     case 'TABLE':
-      return { headers: ['Cột 1', 'Cột 2'], rows: [['Giá trị 1', 'Giá trị 2']] };
+      return {
+        headers: ['Cột 1', 'Cột 2'],
+        rows: [['Giá trị 1', 'Giá trị 2']],
+      };
     case 'IMAGE':
       return {
         url: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8',
@@ -116,8 +123,21 @@ function contentRecord(content: unknown): Record<string, unknown> {
     : {};
 }
 
-function SortableItem({ id, children }: { id: string; children: (handle: ReactNode) => ReactNode }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+function SortableItem({
+  id,
+  children,
+}: {
+  id: string;
+  children: (handle: ReactNode) => ReactNode;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
   return (
     <div
       ref={setNodeRef}
@@ -153,7 +173,9 @@ function SortableList<T extends { clientId: string }>({
 }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
   function dragEnd(event: DragEndEvent) {
@@ -166,8 +188,15 @@ function SortableList<T extends { clientId: string }>({
   }
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={dragEnd}>
-      <SortableContext items={items.map((item) => item.clientId)} strategy={verticalListSortingStrategy}>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={dragEnd}
+    >
+      <SortableContext
+        items={items.map((item) => item.clientId)}
+        strategy={verticalListSortingStrategy}
+      >
         {items.map((item, index) => (
           <SortableItem id={item.clientId} key={item.clientId}>
             {(handle) => children(item, index, handle)}
@@ -250,10 +279,18 @@ function BlockEditor({
           {block.generatedByAI && <span className="status">AI</span>}
         </div>
         <div className="builder-actions">
-          <button className="btn secondary compact" type="button" onClick={onDuplicate}>
+          <button
+            className="btn secondary compact"
+            type="button"
+            onClick={onDuplicate}
+          >
             Nhân bản
           </button>
-          <button className="btn danger compact" type="button" onClick={onDelete}>
+          <button
+            className="btn danger compact"
+            type="button"
+            onClick={onDelete}
+          >
             Xóa
           </button>
         </div>
@@ -268,10 +305,16 @@ function BlockEditor({
             onChange={(event) => {
               const type = event.target.value as BlockState['type'];
               if (type === 'SOURCE_REFERENCE' && sourceChunks.length === 0) {
-                window.alert('Hãy tải tài liệu nguồn trước khi thêm block trích dẫn.');
+                window.alert(
+                  'Hãy tải tài liệu nguồn trước khi thêm block trích dẫn.',
+                );
                 return;
               }
-              onChange({ ...block, type, contentJson: defaultBlock(type, sourceChunks) });
+              onChange({
+                ...block,
+                type,
+                contentJson: defaultBlock(type, sourceChunks),
+              });
             }}
           >
             {builderBlockTypes.map((type) => (
@@ -285,7 +328,9 @@ function BlockEditor({
           <input
             type="checkbox"
             checked={block.isLocked}
-            onChange={(event) => onChange({ ...block, isLocked: event.target.checked })}
+            onChange={(event) =>
+              onChange({ ...block, isLocked: event.target.checked })
+            }
           />
           Khóa block để AI không ghi đè
         </label>
@@ -306,7 +351,9 @@ function BlockEditor({
             <select
               className="input"
               value={Number(content.level ?? 2)}
-              onChange={(event) => updateContent({ level: Number(event.target.value) })}
+              onChange={(event) =>
+                updateContent({ level: Number(event.target.value) })
+              }
             >
               <option value={2}>H2</option>
               <option value={3}>H3</option>
@@ -339,7 +386,9 @@ function BlockEditor({
               <select
                 className="input"
                 value={String(content.tone ?? 'info')}
-                onChange={(event) => updateContent({ tone: event.target.value })}
+                onChange={(event) =>
+                  updateContent({ tone: event.target.value })
+                }
               >
                 <option value="info">Thông tin</option>
                 <option value="warning">Cảnh báo</option>
@@ -361,7 +410,9 @@ function BlockEditor({
             <input
               className="input"
               value={String(content.language ?? 'text')}
-              onChange={(event) => updateContent({ language: event.target.value })}
+              onChange={(event) =>
+                updateContent({ language: event.target.value })
+              }
             />
           </label>
           <label className="label">
@@ -420,7 +471,9 @@ function BlockEditor({
             <input
               className="input"
               value={String(content.caption ?? '')}
-              onChange={(event) => updateContent({ caption: event.target.value })}
+              onChange={(event) =>
+                updateContent({ caption: event.target.value })
+              }
             />
           </label>
         </div>
@@ -432,7 +485,9 @@ function BlockEditor({
           <input
             className="input"
             value={String(content.assessmentId ?? '')}
-            onChange={(event) => updateContent({ assessmentId: event.target.value })}
+            onChange={(event) =>
+              updateContent({ assessmentId: event.target.value })
+            }
           />
         </label>
       )}
@@ -476,7 +531,9 @@ function BlockEditor({
             className="input"
             rows={6}
             value={String(content.question ?? '')}
-            onChange={(event) => updateContent({ question: event.target.value })}
+            onChange={(event) =>
+              updateContent({ question: event.target.value })
+            }
           />
         </label>
       )}
@@ -498,7 +555,9 @@ function BlockEditor({
                     checked={selected}
                     onChange={(event) => {
                       const current = Array.isArray(content.chunkIds)
-                        ? content.chunkIds.filter((id): id is string => typeof id === 'string')
+                        ? content.chunkIds.filter(
+                            (id): id is string => typeof id === 'string',
+                          )
                         : [];
                       const next = event.target.checked
                         ? [...new Set([...current, chunk.id])]
@@ -520,7 +579,11 @@ function BlockEditor({
           <textarea
             className="input"
             rows={6}
-            value={Array.isArray(content.items) ? content.items.map(String).join('\n') : ''}
+            value={
+              Array.isArray(content.items)
+                ? content.items.map(String).join('\n')
+                : ''
+            }
             onChange={(event) =>
               updateContent({
                 items: event.target.value
@@ -602,7 +665,8 @@ export function CourseBuilder({
 
   const disabled = status === 'saving' || status === 'conflict';
   const statusClass = useMemo(
-    () => `save-state ${status === 'error' || status === 'conflict' ? 'save-error' : ''}`,
+    () =>
+      `save-state ${status === 'error' || status === 'conflict' ? 'save-error' : ''}`,
     [status],
   );
 
@@ -618,7 +682,10 @@ export function CourseBuilder({
       return;
     }
     if (!window.confirm('Xóa mô-đun và toàn bộ bài học bên trong?')) return;
-    markChanged({ ...draft, modules: draft.modules.filter((_, i) => i !== index) });
+    markChanged({
+      ...draft,
+      modules: draft.modules.filter((_, i) => i !== index),
+    });
   }
 
   function duplicateModule(index: number) {
@@ -689,7 +756,10 @@ export function CourseBuilder({
           </div>
         </div>
         <div className="builder-actions">
-          <Link className="btn secondary" href={`/admin/courses/${draft.courseId}/preview`}>
+          <Link
+            className="btn secondary"
+            href={`/admin/courses/${draft.courseId}/preview`}
+          >
             Xem trước
           </Link>
           <button
@@ -712,7 +782,9 @@ export function CourseBuilder({
               <input
                 className="input"
                 value={draft.title}
-                onChange={(event) => markChanged({ ...draft, title: event.target.value })}
+                onChange={(event) =>
+                  markChanged({ ...draft, title: event.target.value })
+                }
               />
             </label>
             <label className="label">
@@ -720,7 +792,9 @@ export function CourseBuilder({
               <input
                 className="input"
                 value={draft.category}
-                onChange={(event) => markChanged({ ...draft, category: event.target.value })}
+                onChange={(event) =>
+                  markChanged({ ...draft, category: event.target.value })
+                }
               />
             </label>
           </div>
@@ -741,7 +815,9 @@ export function CourseBuilder({
               <input
                 className="input"
                 value={draft.level}
-                onChange={(event) => markChanged({ ...draft, level: event.target.value })}
+                onChange={(event) =>
+                  markChanged({ ...draft, level: event.target.value })
+                }
               />
             </label>
             <label className="label">
@@ -749,7 +825,9 @@ export function CourseBuilder({
               <input
                 className="input"
                 value={draft.language}
-                onChange={(event) => markChanged({ ...draft, language: event.target.value })}
+                onChange={(event) =>
+                  markChanged({ ...draft, language: event.target.value })
+                }
               />
             </label>
             <label className="label">
@@ -762,7 +840,9 @@ export function CourseBuilder({
                 onChange={(event) =>
                   markChanged({
                     ...draft,
-                    estimatedMinutes: event.target.value ? Number(event.target.value) : null,
+                    estimatedMinutes: event.target.value
+                      ? Number(event.target.value)
+                      : null,
                   })
                 }
               />
@@ -776,7 +856,10 @@ export function CourseBuilder({
                 type="url"
                 value={draft.coverImageUrl ?? ''}
                 onChange={(event) =>
-                  markChanged({ ...draft, coverImageUrl: event.target.value || null })
+                  markChanged({
+                    ...draft,
+                    coverImageUrl: event.target.value || null,
+                  })
                 }
               />
             </label>
@@ -788,7 +871,8 @@ export function CourseBuilder({
                 onChange={(event) =>
                   markChanged({
                     ...draft,
-                    visibility: event.target.value as CourseBuilderState['visibility'],
+                    visibility: event.target
+                      .value as CourseBuilderState['visibility'],
                   })
                 }
               >
@@ -814,7 +898,9 @@ export function CourseBuilder({
         <div className="builder-section-heading">
           <div>
             <h2>Roadmap</h2>
-            <p className="muted">Kéo thả để sắp xếp mô-đun, bài học và block.</p>
+            <p className="muted">
+              Kéo thả để sắp xếp mô-đun, bài học và block.
+            </p>
           </div>
           <button className="btn" type="button" onClick={addModule}>
             + Mô-đun
@@ -859,7 +945,10 @@ export function CourseBuilder({
                     className="input"
                     value={courseModule.title}
                     onChange={(event) =>
-                      updateModule(moduleIndex, { ...courseModule, title: event.target.value })
+                      updateModule(moduleIndex, {
+                        ...courseModule,
+                        title: event.target.value,
+                      })
                     }
                   />
                 </label>
@@ -873,7 +962,9 @@ export function CourseBuilder({
                     onChange={(event) =>
                       updateModule(moduleIndex, {
                         ...courseModule,
-                        estimatedMinutes: event.target.value ? Number(event.target.value) : null,
+                        estimatedMinutes: event.target.value
+                          ? Number(event.target.value)
+                          : null,
                       })
                     }
                   />
@@ -886,7 +977,10 @@ export function CourseBuilder({
                   rows={3}
                   value={courseModule.description}
                   onChange={(event) =>
-                    updateModule(moduleIndex, { ...courseModule, description: event.target.value })
+                    updateModule(moduleIndex, {
+                      ...courseModule,
+                      description: event.target.value,
+                    })
                   }
                 />
               </label>
@@ -945,7 +1039,9 @@ export function CourseBuilder({
 
               <SortableList
                 items={courseModule.lessons}
-                onChange={(lessons) => updateModule(moduleIndex, { ...courseModule, lessons })}
+                onChange={(lessons) =>
+                  updateModule(moduleIndex, { ...courseModule, lessons })
+                }
               >
                 {(lesson, lessonIndex, lessonHandle) => {
                   const updateLesson = (next: LessonState) => {
@@ -982,7 +1078,10 @@ export function CourseBuilder({
                               };
                               const lessons = [...courseModule.lessons];
                               lessons.splice(lessonIndex + 1, 0, duplicated);
-                              updateModule(moduleIndex, { ...courseModule, lessons });
+                              updateModule(moduleIndex, {
+                                ...courseModule,
+                                lessons,
+                              });
                             }}
                           >
                             Nhân bản
@@ -992,13 +1091,22 @@ export function CourseBuilder({
                             type="button"
                             onClick={() => {
                               if (courseModule.lessons.length === 1) {
-                                window.alert('Mỗi mô-đun cần ít nhất một bài học.');
+                                window.alert(
+                                  'Mỗi mô-đun cần ít nhất một bài học.',
+                                );
                                 return;
                               }
-                              if (!window.confirm('Xóa bài học và toàn bộ nội dung bên trong?')) return;
+                              if (
+                                !window.confirm(
+                                  'Xóa bài học và toàn bộ nội dung bên trong?',
+                                )
+                              )
+                                return;
                               updateModule(moduleIndex, {
                                 ...courseModule,
-                                lessons: courseModule.lessons.filter((_, i) => i !== lessonIndex),
+                                lessons: courseModule.lessons.filter(
+                                  (_, i) => i !== lessonIndex,
+                                ),
                               });
                             }}
                           >
@@ -1013,7 +1121,12 @@ export function CourseBuilder({
                           <input
                             className="input"
                             value={lesson.title}
-                            onChange={(event) => updateLesson({ ...lesson, title: event.target.value })}
+                            onChange={(event) =>
+                              updateLesson({
+                                ...lesson,
+                                title: event.target.value,
+                              })
+                            }
                           />
                         </label>
                         <label className="label">
@@ -1021,7 +1134,12 @@ export function CourseBuilder({
                           <input
                             className="input"
                             value={lesson.slug}
-                            onChange={(event) => updateLesson({ ...lesson, slug: event.target.value })}
+                            onChange={(event) =>
+                              updateLesson({
+                                ...lesson,
+                                slug: event.target.value,
+                              })
+                            }
                           />
                         </label>
                       </div>
@@ -1033,7 +1151,10 @@ export function CourseBuilder({
                             rows={3}
                             value={lesson.description}
                             onChange={(event) =>
-                              updateLesson({ ...lesson, description: event.target.value })
+                              updateLesson({
+                                ...lesson,
+                                description: event.target.value,
+                              })
                             }
                           />
                         </label>
@@ -1070,7 +1191,10 @@ export function CourseBuilder({
                                   id: undefined,
                                   clientId: uid('block'),
                                   type: 'PARAGRAPH',
-                                  contentJson: defaultBlock('PARAGRAPH', sourceChunks),
+                                  contentJson: defaultBlock(
+                                    'PARAGRAPH',
+                                    sourceChunks,
+                                  ),
                                   isLocked: false,
                                   generatedByAI: false,
                                 },
@@ -1084,7 +1208,9 @@ export function CourseBuilder({
 
                       <SortableList
                         items={lesson.blocks}
-                        onChange={(blocks) => updateLesson({ ...lesson, blocks })}
+                        onChange={(blocks) =>
+                          updateLesson({ ...lesson, blocks })
+                        }
                       >
                         {(block, blockIndex, blockHandle) => (
                           <BlockEditor
@@ -1109,13 +1235,17 @@ export function CourseBuilder({
                             }}
                             onDelete={() => {
                               if (lesson.blocks.length === 1) {
-                                window.alert('Mỗi bài học cần ít nhất một block.');
+                                window.alert(
+                                  'Mỗi bài học cần ít nhất một block.',
+                                );
                                 return;
                               }
                               if (!window.confirm('Xóa block này?')) return;
                               updateLesson({
                                 ...lesson,
-                                blocks: lesson.blocks.filter((_, i) => i !== blockIndex),
+                                blocks: lesson.blocks.filter(
+                                  (_, i) => i !== blockIndex,
+                                ),
                               });
                             }}
                           />

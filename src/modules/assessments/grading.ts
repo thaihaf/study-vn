@@ -46,7 +46,10 @@ export function grade(snapshot: Snapshot, answer: unknown) {
     return JSON.stringify(submitted) === JSON.stringify(correct);
   }
   if (snapshot.type === 'SHORT_TEXT') {
-    return normalize(String(answer)) === normalize(String(snapshot.correctAnswerJson));
+    return (
+      normalize(String(answer)) ===
+      normalize(String(snapshot.correctAnswerJson))
+    );
   }
   return null;
 }

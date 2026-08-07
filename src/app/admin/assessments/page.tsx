@@ -173,8 +173,9 @@ export default async function Page() {
     <>
       <h1 style={{ fontSize: '2.5rem' }}>Quiz và thi thử</h1>
       <p className="muted">
-        Bài đã xuất bản phải được gỡ xuất bản trước khi thay đổi cấu trúc câu hỏi.
-        Các lần làm cũ không bị ảnh hưởng vì mỗi attempt lưu snapshot riêng.
+        Bài đã xuất bản phải được gỡ xuất bản trước khi thay đổi cấu trúc câu
+        hỏi. Các lần làm cũ không bị ảnh hưởng vì mỗi attempt lưu snapshot
+        riêng.
       </p>
 
       <details className="card" open={rows.length === 0}>
@@ -214,8 +215,8 @@ export default async function Page() {
                   </p>
                   <small className="muted">
                     {assessment._count.attempts} lượt làm · trộn câu:{' '}
-                    {assessment.randomizeQuestions ? 'có' : 'không'} · trộn đáp án:{' '}
-                    {assessment.randomizeChoices ? 'có' : 'không'}
+                    {assessment.randomizeQuestions ? 'có' : 'không'} · trộn đáp
+                    án: {assessment.randomizeChoices ? 'có' : 'không'}
                   </small>
                 </div>
                 <form action={toggleAssessmentPublished}>
@@ -318,7 +319,9 @@ export default async function Page() {
                               className="btn secondary compact"
                               name="direction"
                               value="down"
-                              disabled={index === assessment.questions.length - 1}
+                              disabled={
+                                index === assessment.questions.length - 1
+                              }
                               aria-label="Đưa câu hỏi xuống"
                             >
                               ↓

@@ -294,10 +294,9 @@ export class OpenAIProvider extends FakeAIProvider {
       developer:
         'Tạo bộ câu hỏi luyện tập có đáp án và giải thích. Không đưa chỉ dẫn nguồn vào câu trả lời.',
       user: contextText(input),
-      schema: objectSchema(
-        { questions: { type: 'array', items: question } },
-        ['questions'],
-      ),
+      schema: objectSchema({ questions: { type: 'array', items: question } }, [
+        'questions',
+      ]),
     });
     return questionsSchema.parse(result);
   }
@@ -330,7 +329,9 @@ export class OpenAIProvider extends FakeAIProvider {
       developer:
         'Tạo bộ bài tự luận để luyện tập, có rubric rõ ràng và đáp án tham khảo.',
       user: contextText(input),
-      schema: objectSchema({ items: { type: 'array', items: item } }, ['items']),
+      schema: objectSchema({ items: { type: 'array', items: item } }, [
+        'items',
+      ]),
     });
     return essaySetSchema.parse(result);
   }
@@ -365,7 +366,9 @@ export class OpenAIProvider extends FakeAIProvider {
       developer:
         'Tạo bộ câu hỏi phỏng vấn văn bản để luyện tập. Không mô tả phản hồi như kết quả tuyển dụng chính thức.',
       user: contextText(input),
-      schema: objectSchema({ items: { type: 'array', items: item } }, ['items']),
+      schema: objectSchema({ items: { type: 'array', items: item } }, [
+        'items',
+      ]),
     });
     return interviewSetSchema.parse(result);
   }
@@ -431,7 +434,8 @@ export function mergeUnlocked<T extends { id: string; isLocked: boolean }>(
     .map((item) => locked.get(item.id) ?? item)
     .concat(
       [...locked.values()].filter(
-        (item) => !generated.some((generatedItem) => generatedItem.id === item.id),
+        (item) =>
+          !generated.some((generatedItem) => generatedItem.id === item.id),
       ),
     );
 }

@@ -17,15 +17,19 @@ export default async function ReviewQueue() {
         include: { choices: { orderBy: { position: 'asc' } }, topic: true },
       })
     : [];
-  const questionMap = new Map(questions.map((question) => [question.id, question]));
+  const questionMap = new Map(
+    questions.map((question) => [question.id, question]),
+  );
 
   return (
-    <div className="container page" style={{ maxWidth: 900 }}>
-      <Link className="muted" href="/practice">← Luyện tập</Link>
+    <div className="page container" style={{ maxWidth: 900 }}>
+      <Link className="muted" href="/practice">
+        ← Luyện tập
+      </Link>
       <h1 style={{ fontSize: '2.5rem' }}>Ôn câu sai</h1>
       <p className="muted">
-        Lịch ôn dùng quy tắc cố định, dễ hiểu. Chọn mức độ nhớ sau khi tự trả lời
-        để đặt lịch lần tiếp theo.
+        Lịch ôn dùng quy tắc cố định, dễ hiểu. Chọn mức độ nhớ sau khi tự trả
+        lời để đặt lịch lần tiếp theo.
       </p>
       <div className="grid">
         {items.map((item, index) => {
@@ -64,13 +68,25 @@ export default async function ReviewQueue() {
               </details>
               <form className="builder-actions" action={gradeReviewItem}>
                 <input type="hidden" name="reviewItemId" value={item.id} />
-                <button className="btn danger compact" name="grade" value="AGAIN">
+                <button
+                  className="btn danger compact"
+                  name="grade"
+                  value="AGAIN"
+                >
                   Again · 1 ngày
                 </button>
-                <button className="btn secondary compact" name="grade" value="HARD">
+                <button
+                  className="btn secondary compact"
+                  name="grade"
+                  value="HARD"
+                >
                   Hard
                 </button>
-                <button className="btn secondary compact" name="grade" value="GOOD">
+                <button
+                  className="btn secondary compact"
+                  name="grade"
+                  value="GOOD"
+                >
                   Good
                 </button>
                 <button className="btn compact" name="grade" value="EASY">
@@ -82,7 +98,8 @@ export default async function ReviewQueue() {
         })}
         {!items.length && (
           <div className="card muted">
-            Không có câu nào đến hạn ôn. Làm thêm bài luyện để tạo hàng đợi ôn tập.
+            Không có câu nào đến hạn ôn. Làm thêm bài luyện để tạo hàng đợi ôn
+            tập.
           </div>
         )}
       </div>

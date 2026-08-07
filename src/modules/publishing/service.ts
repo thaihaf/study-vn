@@ -25,10 +25,7 @@ function requiredJsonInput(
   return value === null ? Prisma.JsonNull : value;
 }
 
-export async function validateVersion(
-  db: DB,
-  id: string,
-): Promise<Validation> {
+export async function validateVersion(db: DB, id: string): Promise<Validation> {
   const version = await db.courseVersion.findUnique({
     where: { id },
     include: {
@@ -201,8 +198,8 @@ export async function restoreVersion(
       data: { status: 'ARCHIVED' },
     });
 
-    const modules: Prisma.ModuleCreateWithoutVersionInput[] = source.modules.map(
-      (courseModule) => {
+    const modules: Prisma.ModuleCreateWithoutVersionInput[] =
+      source.modules.map((courseModule) => {
         const lessons: Prisma.LessonCreateWithoutModuleInput[] =
           courseModule.lessons.map((lesson) => {
             const blocks: Prisma.LessonBlockCreateWithoutLessonInput[] =
@@ -241,11 +238,12 @@ export async function restoreVersion(
           description: courseModule.description,
           position: courseModule.position,
           estimatedMinutes: courseModule.estimatedMinutes,
-          learningObjectives: optionalJsonInput(courseModule.learningObjectives),
+          learningObjectives: optionalJsonInput(
+            courseModule.learningObjectives,
+          ),
           lessons: { create: lessons },
         };
-      },
-    );
+      });
 
     const restored = await transaction.courseVersion.create({
       data: {

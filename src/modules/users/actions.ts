@@ -24,7 +24,9 @@ export async function updateUserRole(form: FormData) {
     })
     .parse(Object.fromEntries(form));
 
-  const target = await db.user.findUniqueOrThrow({ where: { id: input.userId } });
+  const target = await db.user.findUniqueOrThrow({
+    where: { id: input.userId },
+  });
   if (target.role === 'SUPER_ADMIN' && input.role !== 'SUPER_ADMIN') {
     const count = await db.user.count({ where: { role: 'SUPER_ADMIN' } });
     if (count <= 1) throw new Error('LAST_SUPER_ADMIN');
@@ -34,7 +36,8 @@ export async function updateUserRole(form: FormData) {
     where: { id: input.userId },
     data: {
       role: input.role,
-      canPublish: input.role === 'SUPER_ADMIN' ? true : Boolean(input.canPublish),
+      canPublish:
+        input.role === 'SUPER_ADMIN' ? true : Boolean(input.canPublish),
     },
   });
   await db.auditLog.create({

@@ -6,7 +6,7 @@ import { LoginSubmitButton } from './login-submit-button';
 
 export default function Login() {
   return (
-    <div className="container page" style={{ maxWidth: 480 }}>
+    <div className="page container" style={{ maxWidth: 480 }}>
       <form className="card grid" action={login}>
         <h1 style={{ fontSize: '2rem' }}>Chào bạn trở lại</h1>
         <label className="label">

@@ -350,7 +350,8 @@ export async function applyGenerationJob(form: FormData) {
   if (job.targetEntityId) throw new Error('GENERATION_ALREADY_APPLIED');
 
   const sourceIds = sourceIdsFromJob(job.inputSourceIds);
-  const outputAction = settingString(job.settingsJson, 'outputAction') || 'PREVIEW';
+  const outputAction =
+    settingString(job.settingsJson, 'outputAction') || 'PREVIEW';
   const label =
     settingString(job.settingsJson, 'courseTitle') ||
     (job.kind === 'QUESTIONS'
@@ -402,7 +403,8 @@ export async function applyGenerationJob(form: FormData) {
     db.auditLog.create({
       data: {
         actorId: user.id,
-        action: outputAction === 'PUBLISH' ? 'AI_PUBLISH_NOW' : 'AI_OUTPUT_APPLIED',
+        action:
+          outputAction === 'PUBLISH' ? 'AI_PUBLISH_NOW' : 'AI_OUTPUT_APPLIED',
         entityType: job.kind,
         entityId,
         metadata: { jobId: job.id },

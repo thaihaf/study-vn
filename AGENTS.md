@@ -235,29 +235,29 @@ Use transactions for publish/version operations and grading operations that upda
 Suggested structure:
 
 src/
-  app/
-    (public)/
-    (auth)/
-    (learner)/
-    admin/
-    api/
-  components/
-    ui/
-    shared/
-  modules/
-    auth/
-    users/
-    courses/
-    content/
-    sources/
-    ai/
-    assessments/
-    progress/
-    interviews/
-    publishing/
-    audit/
-  lib/
-  server/
+app/
+(public)/
+(auth)/
+(learner)/
+admin/
+api/
+components/
+ui/
+shared/
+modules/
+auth/
+users/
+courses/
+content/
+sources/
+ai/
+assessments/
+progress/
+interviews/
+publishing/
+audit/
+lib/
+server/
 prisma/
 tests/
 
@@ -346,10 +346,10 @@ Never run unsafe default credentials automatically in production.
 Content hierarchy:
 
 Course
-  └── CourseVersion
-        └── Module
-              └── Lesson
-                    └── LessonBlock
+└── CourseVersion
+└── Module
+└── Lesson
+└── LessonBlock
 
 Course
 

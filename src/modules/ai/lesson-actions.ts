@@ -80,7 +80,10 @@ export async function generateLessonDraft(form: FormData) {
     const output = await getAIProvider().generateLesson({
       prompt: normalized,
       language: lesson.module.version.course.language,
-      sources: sourceChunks.map((chunk) => ({ id: chunk.id, text: chunk.text })),
+      sources: sourceChunks.map((chunk) => ({
+        id: chunk.id,
+        text: chunk.text,
+      })),
     });
     const parsed = lessonSchema.parse(output);
     await db.$transaction([

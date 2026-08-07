@@ -21,12 +21,18 @@ export async function lessonInteraction(form: FormData) {
       id: input.lessonId,
       module: { versionId: input.versionId },
     },
-    include: { module: { include: { version: { include: { course: true } } } } },
+    include: {
+      module: { include: { version: { include: { course: true } } } },
+    },
   });
   if (!lesson) throw new Error('LESSON_NOT_FOUND');
 
   const enrolled = await db.enrollment.findFirst({
-    where: { userId: user.id, versionId: input.versionId, courseId: lesson.module.version.courseId },
+    where: {
+      userId: user.id,
+      versionId: input.versionId,
+      courseId: lesson.module.version.courseId,
+    },
   });
   if (!enrolled) throw new Error('FORBIDDEN');
 
@@ -72,7 +78,10 @@ export async function lessonInteraction(form: FormData) {
     if (!content && existing) {
       await db.userNote.delete({ where: { id: existing.id } });
     } else if (content && existing) {
-      await db.userNote.update({ where: { id: existing.id }, data: { content } });
+      await db.userNote.update({
+        where: { id: existing.id },
+        data: { content },
+      });
     } else if (content) {
       await db.userNote.create({
         data: { userId: user.id, lessonId: input.lessonId, content },

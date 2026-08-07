@@ -34,16 +34,16 @@ Mở <http://localhost:3000>. Health endpoint: `GET /api/health`.
 
 ## Biến môi trường
 
-| Biến | Bắt buộc | Ý nghĩa |
-|---|---:|---|
-| `DATABASE_URL` | Có | PostgreSQL connection URL |
-| `AUTH_SECRET` | Có | Bí mật ký session, ngẫu nhiên >= 32 byte |
-| `AUTH_TRUST_HOST` | Prod/proxy | Cho Auth.js tin cậy host do proxy cung cấp |
-| `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | Khi seed | Super admin ban đầu |
-| `OPENAI_API_KEY` | Không | Thiếu biến này, CMS thủ công vẫn dùng được |
-| `OPENAI_MODEL` | Khi dùng AI | Model hỗ trợ Responses + Structured Outputs |
-| `AI_PROVIDER` | Không | `openai` (mặc định) hoặc `fake` trong test |
-| `UPLOAD_DIR`, `MAX_UPLOAD_BYTES` | Không | Storage private và giới hạn upload (5 MiB mặc định) |
+| Biến                                      |    Bắt buộc | Ý nghĩa                                             |
+| ----------------------------------------- | ----------: | --------------------------------------------------- |
+| `DATABASE_URL`                            |          Có | PostgreSQL connection URL                           |
+| `AUTH_SECRET`                             |          Có | Bí mật ký session, ngẫu nhiên >= 32 byte            |
+| `AUTH_TRUST_HOST`                         |  Prod/proxy | Cho Auth.js tin cậy host do proxy cung cấp          |
+| `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` |    Khi seed | Super admin ban đầu                                 |
+| `OPENAI_API_KEY`                          |       Không | Thiếu biến này, CMS thủ công vẫn dùng được          |
+| `OPENAI_MODEL`                            | Khi dùng AI | Model hỗ trợ Responses + Structured Outputs         |
+| `AI_PROVIDER`                             |       Không | `openai` (mặc định) hoặc `fake` trong test          |
+| `UPLOAD_DIR`, `MAX_UPLOAD_BYTES`          |       Không | Storage private và giới hạn upload (5 MiB mặc định) |
 
 ## Kiến trúc
 

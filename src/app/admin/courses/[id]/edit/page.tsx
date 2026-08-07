@@ -48,11 +48,14 @@ export default async function Editor({
       <div className="builder-page-heading">
         <div>
           <span className="status">
-            {draft ? `DRAFT · revision ${draft.revision}` : latest?.status ?? 'Không có phiên bản'}
+            {draft
+              ? `DRAFT · revision ${draft.revision}`
+              : (latest?.status ?? 'Không có phiên bản')}
           </span>
           <h1 style={{ fontSize: '2.4rem' }}>{course.title}</h1>
           <p className="muted">
-            Phiên bản đã xuất bản luôn bất biến. Mọi chỉnh sửa được thực hiện trên bản nháp.
+            Phiên bản đã xuất bản luôn bất biến. Mọi chỉnh sửa được thực hiện
+            trên bản nháp.
           </p>
         </div>
         <div className="builder-actions">
@@ -75,8 +78,9 @@ export default async function Editor({
         <section className="card grid">
           <h2>Không có bản nháp đang chỉnh sửa</h2>
           <p>
-            Phiên bản v{latest.versionNumber} đang ở trạng thái <b>{latest.status}</b>.
-            Tạo một bản nháp mới từ phiên bản này để chỉnh sửa mà không thay đổi lịch sử.
+            Phiên bản v{latest.versionNumber} đang ở trạng thái{' '}
+            <b>{latest.status}</b>. Tạo một bản nháp mới từ phiên bản này để
+            chỉnh sửa mà không thay đổi lịch sử.
           </p>
           <form action={restore}>
             <input type="hidden" name="versionId" value={latest.id} />
@@ -119,7 +123,11 @@ export default async function Editor({
               !validation.errors.length &&
               !course.archivedAt && (
                 <form action={publish}>
-                  <input type="hidden" name="versionId" value={draft.versionId} />
+                  <input
+                    type="hidden"
+                    name="versionId"
+                    value={draft.versionId}
+                  />
                   <ConfirmButton
                     className="btn"
                     message="Xuất bản bản nháp này cho người học? Phiên bản công khai hiện tại sẽ được lưu trữ."
@@ -136,7 +144,9 @@ export default async function Editor({
         <div className="builder-page-heading">
           <div>
             <h2>Lịch sử phiên bản</h2>
-            <p className="muted">Khôi phục luôn tạo một bản nháp mới, không sửa lịch sử cũ.</p>
+            <p className="muted">
+              Khôi phục luôn tạo một bản nháp mới, không sửa lịch sử cũ.
+            </p>
           </div>
         </div>
         {course.versions.map((version) => (
@@ -155,7 +165,9 @@ export default async function Editor({
               {version.id !== draft?.versionId && (
                 <form action={restore}>
                   <input type="hidden" name="versionId" value={version.id} />
-                  <button className="btn secondary">Khôi phục thành bản nháp</button>
+                  <button className="btn secondary">
+                    Khôi phục thành bản nháp
+                  </button>
                 </form>
               )}
             </div>
@@ -177,7 +189,8 @@ export default async function Editor({
         <section className="card danger-zone">
           <h2>Vùng nguy hiểm</h2>
           <p className="muted">
-            Lưu trữ sẽ ẩn khóa học khỏi người học và đóng các phiên bản đang hoạt động.
+            Lưu trữ sẽ ẩn khóa học khỏi người học và đóng các phiên bản đang
+            hoạt động.
           </p>
           <form action={archiveCourse}>
             <input type="hidden" name="courseId" value={course.id} />

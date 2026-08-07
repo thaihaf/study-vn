@@ -57,7 +57,10 @@ export async function archiveCourse(form: FormData) {
 export async function unarchiveCourse(form: FormData) {
   const user = await requirePermission('course:edit');
   const courseId = z.string().parse(form.get('courseId'));
-  await db.course.update({ where: { id: courseId }, data: { archivedAt: null } });
+  await db.course.update({
+    where: { id: courseId },
+    data: { archivedAt: null },
+  });
   await db.auditLog.create({
     data: {
       actorId: user.id,

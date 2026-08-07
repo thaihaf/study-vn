@@ -5,14 +5,16 @@ import { requireUser } from '@/modules/auth/session';
 
 export default async function Admin() {
   await requireUser();
-  const [courses, reviews, jobs, sources, learners, events] = await Promise.all([
-    db.courseVersion.groupBy({ by: ['status'], _count: true }),
-    db.courseVersion.count({ where: { status: 'IN_REVIEW' } }),
-    db.generationJob.groupBy({ by: ['status'], _count: true }),
-    db.source.groupBy({ by: ['processingStatus'], _count: true }),
-    db.enrollment.count(),
-    db.auditLog.findMany({ take: 5, orderBy: { createdAt: 'desc' } }),
-  ]);
+  const [courses, reviews, jobs, sources, learners, events] = await Promise.all(
+    [
+      db.courseVersion.groupBy({ by: ['status'], _count: true }),
+      db.courseVersion.count({ where: { status: 'IN_REVIEW' } }),
+      db.generationJob.groupBy({ by: ['status'], _count: true }),
+      db.source.groupBy({ by: ['processingStatus'], _count: true }),
+      db.enrollment.count(),
+      db.auditLog.findMany({ take: 5, orderBy: { createdAt: 'desc' } }),
+    ],
+  );
 
   return (
     <>
@@ -57,8 +59,9 @@ export default async function Admin() {
         <div className="card">
           <b>Phiên bản</b>
           <p>
-            {courses.map((item) => `${item.status}: ${item._count}`).join(' · ') ||
-              '0'}
+            {courses
+              .map((item) => `${item.status}: ${item._count}`)
+              .join(' · ') || '0'}
           </p>
         </div>
         <div className="card">

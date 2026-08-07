@@ -24,7 +24,8 @@ export default async function Jobs({
         <div>
           <h1 style={{ fontSize: '2.5rem' }}>AI generation jobs</h1>
           <p className="muted">
-            Output luôn được lưu để xem trước trước khi áp dụng vào nội dung thật.
+            Output luôn được lưu để xem trước trước khi áp dụng vào nội dung
+            thật.
           </p>
         </div>
         <Link className="btn" href="/admin/generate">
@@ -37,7 +38,9 @@ export default async function Jobs({
             job.kind === 'LESSON' && job.targetEntityId?.startsWith('applied:');
           return (
             <article
-              className={job.id === selectedJobId ? 'card selected-job' : 'card'}
+              className={
+                job.id === selectedJobId ? 'card selected-job' : 'card'
+              }
               key={job.id}
             >
               <div className="builder-row">
@@ -73,7 +76,9 @@ export default async function Jobs({
                 <details>
                   <summary>So sánh với nội dung trước generation</summary>
                   <pre className="code-block">
-                    <code>{JSON.stringify(job.artifacts[0].payload, null, 2)}</code>
+                    <code>
+                      {JSON.stringify(job.artifacts[0].payload, null, 2)}
+                    </code>
                   </pre>
                 </details>
               )}

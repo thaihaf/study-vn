@@ -20,8 +20,9 @@ export default async function Reviews() {
     <>
       <h1 style={{ fontSize: '2.5rem' }}>Hàng đợi duyệt</h1>
       <p className="muted">
-        Nhận xét không làm thay đổi trạng thái. Phê duyệt ghi người duyệt và thời
-        điểm; xuất bản là một hành động riêng. Từ chối trả phiên bản về bản nháp.
+        Nhận xét không làm thay đổi trạng thái. Phê duyệt ghi người duyệt và
+        thời điểm; xuất bản là một hành động riêng. Từ chối trả phiên bản về bản
+        nháp.
       </p>
       {await Promise.all(
         versions.map(async (version) => {
@@ -75,7 +76,12 @@ export default async function Reviews() {
                 <input type="hidden" name="versionId" value={version.id} />
                 <label className="label">
                   Nhận xét
-                  <textarea className="input" name="comment" rows={4} required />
+                  <textarea
+                    className="input"
+                    name="comment"
+                    rows={4}
+                    required
+                  />
                 </label>
                 <div className="builder-actions">
                   <button

@@ -27,13 +27,24 @@ const generationInput = z.object({
   duration: z.string().max(500).default(''),
   language: z.string().min(2).max(20).default('vi'),
   tone: z.string().max(500).default('Rõ ràng, thực tế'),
-  mode: z.enum(['BLUEPRINT', 'FULL_COURSE', 'LESSON', 'QUESTIONS', 'ESSAY_SET', 'INTERVIEW_SET']),
+  mode: z.enum([
+    'BLUEPRINT',
+    'FULL_COURSE',
+    'LESSON',
+    'QUESTIONS',
+    'ESSAY_SET',
+    'INTERVIEW_SET',
+  ]),
   targetCourseId: z.string().optional(),
   targetLessonId: z.string().optional(),
-  outputAction: z.enum(['PREVIEW', 'SAVE_DRAFT', 'SUBMIT_REVIEW', 'PUBLISH']).default('PREVIEW'),
+  outputAction: z
+    .enum(['PREVIEW', 'SAVE_DRAFT', 'SUBMIT_REVIEW', 'PUBLISH'])
+    .default('PREVIEW'),
 });
 
-type GenerationSettings = z.infer<typeof generationInput> & { sourceIds: string[] };
+type GenerationSettings = z.infer<typeof generationInput> & {
+  sourceIds: string[];
+};
 
 function json(value: unknown): Prisma.InputJsonValue {
   return value as Prisma.InputJsonValue;
@@ -42,7 +53,10 @@ function json(value: unknown): Prisma.InputJsonValue {
 async function loadSources(sourceIds: string[]) {
   if (!sourceIds.length) return [];
   const chunks = await db.sourceChunk.findMany({
-    where: { sourceId: { in: sourceIds }, source: { processingStatus: 'READY', archivedAt: null } },
+    where: {
+      sourceId: { in: sourceIds },
+      source: { processingStatus: 'READY', archivedAt: null },
+    },
     orderBy: [{ sourceId: 'asc' }, { position: 'asc' }],
     take: 80,
   });
@@ -58,18 +72,26 @@ function expandedPrompt(input: z.infer<typeof generationInput>) {
     input.outcome && `Kết quả mong muốn: ${input.outcome}`,
     input.duration && `Thời lượng/quy mô: ${input.duration}`,
     input.tone && `Giọng điệu: ${input.tone}`,
-  ].filter(Boolean).join('\n');
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
 async function generateOutput(settings: GenerationSettings) {
   const provider = getAIProvider();
   const sources = await loadSources(settings.sourceIds);
-  const context = { prompt: expandedPrompt(settings), language: settings.language, sources };
-  if (settings.mode === 'BLUEPRINT') return provider.generateCourseBlueprint(context);
+  const context = {
+    prompt: expandedPrompt(settings),
+    language: settings.language,
+    sources,
+  };
+  if (settings.mode === 'BLUEPRINT')
+    return provider.generateCourseBlueprint(context);
   if (settings.mode === 'LESSON') return provider.generateLesson(context);
   if (settings.mode === 'QUESTIONS') return provider.generateQuestions(context);
   if (settings.mode === 'ESSAY_SET') return provider.generateEssaySet(context);
-  if (settings.mode === 'INTERVIEW_SET') return provider.generateInterviewSet(context);
+  if (settings.mode === 'INTERVIEW_SET')
+    return provider.generateInterviewSet(context);
 
   const blueprint = await provider.generateCourseBlueprint(context);
   const modules = [];
@@ -90,12 +112,20 @@ async function generateOutput(settings: GenerationSettings) {
 export async function runGeneration(form: FormData) {
   const user = await requirePermission('ai:generate');
   const input = generationInput.parse(Object.fromEntries(form));
-  const sourceIds = form.getAll('sourceIds').filter((value): value is string => typeof value === 'string');
+  const sourceIds = form
+    .getAll('sourceIds')
+    .filter((value): value is string => typeof value === 'string');
   const settings: GenerationSettings = { ...input, sourceIds };
-  const key = crypto.createHash('sha256').update(`${user.id}:${JSON.stringify(settings)}`).digest('hex');
+  const key = crypto
+    .createHash('sha256')
+    .update(`${user.id}:${JSON.stringify(settings)}`)
+    .digest('hex');
 
-  const existing = await db.generationJob.findUnique({ where: { idempotencyKey: key } });
-  if (existing?.status === 'SUCCEEDED') redirect(`/admin/generation-jobs?job=${existing.id}`);
+  const existing = await db.generationJob.findUnique({
+    where: { idempotencyKey: key },
+  });
+  if (existing?.status === 'SUCCEEDED')
+    redirect(`/admin/generation-jobs?job=${existing.id}`);
 
   const job = await db.generationJob.upsert({
     where: { idempotencyKey: key },
@@ -106,7 +136,9 @@ export async function runGeneration(form: FormData) {
       userPrompt: input.prompt,
       settingsJson: json(settings),
       provider: process.env.AI_PROVIDER ?? 'openai',
-      model: process.env.OPENAI_MODEL ?? (process.env.AI_PROVIDER === 'fake' ? 'fake' : 'not-configured'),
+      model:
+        process.env.OPENAI_MODEL ??
+        (process.env.AI_PROVIDER === 'fake' ? 'fake' : 'not-configured'),
       inputSourceIds: json(sourceIds),
       targetEntityId: input.targetLessonId || input.targetCourseId || null,
       status: 'RUNNING',
@@ -127,7 +159,11 @@ export async function runGeneration(form: FormData) {
     await db.$transaction([
       db.generationJob.update({
         where: { id: job.id },
-        data: { status: 'SUCCEEDED', outputSnapshot: json(output), endedAt: new Date() },
+        data: {
+          status: 'SUCCEEDED',
+          outputSnapshot: json(output),
+          endedAt: new Date(),
+        },
       }),
       db.generationArtifact.create({
         data: { jobId: job.id, kind: input.mode, payload: json(output) },
@@ -139,7 +175,8 @@ export async function runGeneration(form: FormData) {
       data: {
         status: 'FAILED',
         errorCode: error instanceof Error ? error.name : 'UNKNOWN',
-        errorMessage: error instanceof Error ? error.message : 'Không thể tạo nội dung.',
+        errorMessage:
+          error instanceof Error ? error.message : 'Không thể tạo nội dung.',
         endedAt: new Date(),
       },
     });
@@ -148,7 +185,12 @@ export async function runGeneration(form: FormData) {
   redirect(`/admin/generation-jobs?job=${job.id}`);
 }
 
-async function createCourseFromOutput(userId: string, jobId: string, output: unknown, full: boolean) {
+async function createCourseFromOutput(
+  userId: string,
+  jobId: string,
+  output: unknown,
+  full: boolean,
+) {
   const blueprint = blueprintSchema.parse(output);
   const slug = `${slugify(blueprint.title)}-${crypto.randomBytes(3).toString('hex')}`;
   return db.course.create({
@@ -172,11 +214,24 @@ async function createCourseFromOutput(userId: string, jobId: string, output: unk
               position: modulePosition,
               lessons: {
                 create: courseModule.lessons.map((lesson, lessonPosition) => {
-                  const rawGenerated = full && 'generated' in lesson ? lesson.generated : null;
-                  const generated = rawGenerated ? lessonSchema.parse(rawGenerated) : null;
+                  const rawGenerated =
+                    full && 'generated' in lesson ? lesson.generated : null;
+                  const generated = rawGenerated
+                    ? lessonSchema.parse(rawGenerated)
+                    : null;
                   const blocks = generated?.blocks ?? [
-                    { type: 'HEADING' as const, content: { text: 'Mục tiêu', level: 2 } },
-                    { type: 'SUMMARY' as const, content: { items: lesson.objectives.length ? lesson.objectives : ['Bổ sung nội dung bài học'] } },
+                    {
+                      type: 'HEADING' as const,
+                      content: { text: 'Mục tiêu', level: 2 },
+                    },
+                    {
+                      type: 'SUMMARY' as const,
+                      content: {
+                        items: lesson.objectives.length
+                          ? lesson.objectives
+                          : ['Bổ sung nội dung bài học'],
+                      },
+                    },
                   ];
                   return {
                     title: lesson.title,
@@ -206,7 +261,11 @@ async function createCourseFromOutput(userId: string, jobId: string, output: unk
   });
 }
 
-async function applyQuestionSet(userId: string, output: unknown, label: string) {
+async function applyQuestionSet(
+  userId: string,
+  output: unknown,
+  label: string,
+) {
   const generated = questionsSchema.parse(output);
   const bank = await db.questionBank.create({ data: { title: label } });
   for (const item of generated.questions) {
@@ -217,7 +276,9 @@ async function applyQuestionSet(userId: string, output: unknown, label: string) 
       while (await db.topic.findUnique({ where: { slug: candidate } })) {
         candidate = `${slugify(item.topic) || 'tong-quat'}-${suffix++}`;
       }
-      topic = await db.topic.create({ data: { name: item.topic, slug: candidate } });
+      topic = await db.topic.create({
+        data: { name: item.topic, slug: candidate },
+      });
     }
     await db.question.create({
       data: {
@@ -228,10 +289,19 @@ async function applyQuestionSet(userId: string, output: unknown, label: string) 
         difficulty: item.difficulty,
         explanation: item.explanation || null,
         referenceAnswer: item.referenceAnswer || null,
-        rubricJson: item.rubric.length ? json({ criteria: item.rubric }) : undefined,
+        rubricJson: item.rubric.length
+          ? json({ criteria: item.rubric })
+          : undefined,
         status: 'DRAFT',
         authorId: userId,
-        choices: item.choices.length ? { create: item.choices.map((choice, position) => ({ ...choice, position })) } : undefined,
+        choices: item.choices.length
+          ? {
+              create: item.choices.map((choice, position) => ({
+                ...choice,
+                position,
+              })),
+            }
+          : undefined,
       },
     });
   }
@@ -240,8 +310,17 @@ async function applyQuestionSet(userId: string, output: unknown, label: string) 
 
 async function applyEssaySet(userId: string, output: unknown, label: string) {
   const generated = essaySetSchema.parse(output);
-  const bank = await db.questionBank.create({ data: { title: `Bài luận · ${label}` } });
-  const assessment = await db.assessment.create({ data: { title: label, type: 'QUIZ', description: 'Bộ bài tự luận luyện tập', feedbackMode: 'AFTER_SUBMISSION' } });
+  const bank = await db.questionBank.create({
+    data: { title: `Bài luận · ${label}` },
+  });
+  const assessment = await db.assessment.create({
+    data: {
+      title: label,
+      type: 'QUIZ',
+      description: 'Bộ bài tự luận luyện tập',
+      feedbackMode: 'AFTER_SUBMISSION',
+    },
+  });
   for (const [position, item] of generated.items.entries()) {
     const question = await db.question.create({
       data: {
@@ -251,20 +330,40 @@ async function applyEssaySet(userId: string, output: unknown, label: string) {
         difficulty: 3,
         explanation: `Gợi ý dàn ý: ${item.suggestedOutline.join(' · ')}\nLỗi thường gặp: ${item.commonMistakes.join(' · ')}`,
         referenceAnswer: item.referenceAnswer,
-        rubricJson: json({ title: item.title, suggestedMinutes: item.suggestedMinutes, requiredConcepts: item.requiredConcepts, criteria: item.rubric }),
+        rubricJson: json({
+          title: item.title,
+          suggestedMinutes: item.suggestedMinutes,
+          requiredConcepts: item.requiredConcepts,
+          criteria: item.rubric,
+        }),
         status: 'PUBLISHED',
         authorId: userId,
       },
     });
-    await db.assessmentQuestion.create({ data: { assessmentId: assessment.id, questionId: question.id, position } });
+    await db.assessmentQuestion.create({
+      data: { assessmentId: assessment.id, questionId: question.id, position },
+    });
   }
   return assessment.id;
 }
 
-async function applyInterviewSet(userId: string, output: unknown, label: string) {
+async function applyInterviewSet(
+  userId: string,
+  output: unknown,
+  label: string,
+) {
   const generated = interviewSetSchema.parse(output);
-  const bank = await db.questionBank.create({ data: { title: `Phỏng vấn · ${label}` } });
-  const assessment = await db.assessment.create({ data: { title: label, type: 'QUIZ', description: 'Bộ câu hỏi phỏng vấn văn bản', feedbackMode: 'AFTER_SUBMISSION' } });
+  const bank = await db.questionBank.create({
+    data: { title: `Phỏng vấn · ${label}` },
+  });
+  const assessment = await db.assessment.create({
+    data: {
+      title: label,
+      type: 'QUIZ',
+      description: 'Bộ câu hỏi phỏng vấn văn bản',
+      feedbackMode: 'AFTER_SUBMISSION',
+    },
+  });
   for (const [position, item] of generated.items.entries()) {
     const question = await db.question.create({
       data: {
@@ -274,12 +373,18 @@ async function applyInterviewSet(userId: string, output: unknown, label: string)
         difficulty: item.difficulty,
         explanation: `Mục đích: ${item.purpose}\nCâu hỏi tiếp: ${item.followUpQuestions.join(' · ')}\nĐiểm yếu thường gặp: ${item.commonWeakAnswers.join(' · ')}`,
         referenceAnswer: item.referenceAnswer,
-        rubricJson: json({ expectedAnswerStructure: item.expectedAnswerStructure, criteria: item.evaluationRubric, topic: item.topic }),
+        rubricJson: json({
+          expectedAnswerStructure: item.expectedAnswerStructure,
+          criteria: item.evaluationRubric,
+          topic: item.topic,
+        }),
         status: 'PUBLISHED',
         authorId: userId,
       },
     });
-    await db.assessmentQuestion.create({ data: { assessmentId: assessment.id, questionId: question.id, position } });
+    await db.assessmentQuestion.create({
+      data: { assessmentId: assessment.id, questionId: question.id, position },
+    });
   }
   return assessment.id;
 }
@@ -287,41 +392,79 @@ async function applyInterviewSet(userId: string, output: unknown, label: string)
 export async function applyGenerationJob(form: FormData) {
   const user = await requirePermission('ai:generate');
   const jobId = z.string().parse(form.get('jobId'));
-  const job = await db.generationJob.findFirstOrThrow({ where: { id: jobId, status: 'SUCCEEDED' } });
+  const job = await db.generationJob.findFirstOrThrow({
+    where: { id: jobId, status: 'SUCCEEDED' },
+  });
   if (!job.outputSnapshot) throw new Error('GENERATION_HAS_NO_OUTPUT');
-  if (job.targetEntityId && job.kind !== 'LESSON') throw new Error('GENERATION_ALREADY_APPLIED');
+  if (job.targetEntityId && job.kind !== 'LESSON')
+    throw new Error('GENERATION_ALREADY_APPLIED');
   const settings = generationInput.parse(job.settingsJson);
   let entityId = '';
 
   if (job.kind === 'BLUEPRINT' || job.kind === 'FULL_COURSE') {
-    const course = await createCourseFromOutput(user.id, job.id, job.outputSnapshot, job.kind === 'FULL_COURSE');
+    const course = await createCourseFromOutput(
+      user.id,
+      job.id,
+      job.outputSnapshot,
+      job.kind === 'FULL_COURSE',
+    );
     entityId = course.id;
     const draft = course.versions[0];
     if (settings.outputAction === 'SUBMIT_REVIEW') {
-      await db.courseVersion.update({ where: { id: draft.id }, data: { status: 'IN_REVIEW', submittedAt: new Date() } });
+      await db.courseVersion.update({
+        where: { id: draft.id },
+        data: { status: 'IN_REVIEW', submittedAt: new Date() },
+      });
     }
     if (settings.outputAction === 'PUBLISH') {
       await requirePermission('course:publish');
       await publishVersion(db, draft.id, user.id);
     }
   } else if (job.kind === 'QUESTIONS') {
-    entityId = await applyQuestionSet(user.id, job.outputSnapshot, settings.courseTitle || 'Bộ câu hỏi AI');
+    entityId = await applyQuestionSet(
+      user.id,
+      job.outputSnapshot,
+      settings.courseTitle || 'Bộ câu hỏi AI',
+    );
   } else if (job.kind === 'ESSAY_SET') {
-    entityId = await applyEssaySet(user.id, job.outputSnapshot, settings.courseTitle || 'Bài luận luyện tập');
+    entityId = await applyEssaySet(
+      user.id,
+      job.outputSnapshot,
+      settings.courseTitle || 'Bài luận luyện tập',
+    );
   } else if (job.kind === 'INTERVIEW_SET') {
-    entityId = await applyInterviewSet(user.id, job.outputSnapshot, settings.courseTitle || 'Phỏng vấn luyện tập');
+    entityId = await applyInterviewSet(
+      user.id,
+      job.outputSnapshot,
+      settings.courseTitle || 'Phỏng vấn luyện tập',
+    );
   } else {
     throw new Error('LESSON_APPLY_REQUIRES_EDITOR');
   }
 
   await db.$transaction([
-    db.generationJob.update({ where: { id: job.id }, data: { targetEntityId: entityId } }),
-    db.auditLog.create({ data: { actorId: user.id, action: 'AI_OUTPUT_APPLIED', entityType: job.kind, entityId, metadata: { jobId: job.id } } }),
+    db.generationJob.update({
+      where: { id: job.id },
+      data: { targetEntityId: entityId },
+    }),
+    db.auditLog.create({
+      data: {
+        actorId: user.id,
+        action: 'AI_OUTPUT_APPLIED',
+        entityType: job.kind,
+        entityId,
+        metadata: { jobId: job.id },
+      },
+    }),
   ]);
   revalidatePath('/admin');
   revalidatePath('/admin/courses');
   revalidatePath('/admin/questions');
   revalidatePath('/admin/assessments');
   revalidatePath('/admin/interviews');
-  redirect(job.kind === 'BLUEPRINT' || job.kind === 'FULL_COURSE' ? `/admin/courses/${entityId}/edit` : '/admin/generation-jobs');
+  redirect(
+    job.kind === 'BLUEPRINT' || job.kind === 'FULL_COURSE'
+      ? `/admin/courses/${entityId}/edit`
+      : '/admin/generation-jobs',
+  );
 }
