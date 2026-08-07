@@ -52,7 +52,9 @@ export async function createCourseFromDocuments(form: FormData) {
       mimeType: file.type || 'text/plain',
       size: file.size,
     });
-    const text = (await extractTextFromUpload(file)).replace(/\0/g, '').trim();
+    const text = (await extractTextFromUpload(file))
+      .replace(/\0/g, '')
+      .trim();
     if (!text) throw new Error(`SOURCE_HAS_NO_TEXT:${file.name}`);
     const parts = chunks(text);
 
@@ -155,31 +157,37 @@ export async function createCourseFromDocuments(form: FormData) {
             createdById: user.id,
             changeSummary: 'Bản nháp AI tạo từ tài liệu nguồn',
             modules: {
-              create: moduleData.map(({ courseModule, modulePosition, lessonData }) => ({
-                title: courseModule.title,
-                description: courseModule.description,
-                position: modulePosition,
-                lessons: {
-                  create: lessonData.map(({ lesson, generated, lessonPosition }) => ({
-                    title: lesson.title,
-                    slug: lesson.slug,
-                    description: '',
-                    position: lessonPosition,
-                    learningObjectives: toJson(lesson.objectives),
-                    blocks: {
-                      create: generated.blocks.map((block, blockPosition) => ({
-                        type: block.type,
-                        position: blockPosition,
-                        contentJson: toJson(block.content),
-                        generatedByAI: true,
-                        generationJobId: job.id,
-                        createdById: user.id,
-                        updatedById: user.id,
-                      })),
-                    },
-                  })),
-                },
-              })),
+              create: moduleData.map(
+                ({ courseModule, modulePosition, lessonData }) => ({
+                  title: courseModule.title,
+                  description: courseModule.description,
+                  position: modulePosition,
+                  lessons: {
+                    create: lessonData.map(
+                      ({ lesson, generated, lessonPosition }) => ({
+                        title: lesson.title,
+                        slug: lesson.slug,
+                        description: '',
+                        position: lessonPosition,
+                        learningObjectives: toJson(lesson.objectives),
+                        blocks: {
+                          create: generated.blocks.map(
+                            (block, blockPosition) => ({
+                              type: block.type,
+                              position: blockPosition,
+                              contentJson: toJson(block.content),
+                              generatedByAI: true,
+                              generationJobId: job.id,
+                              createdById: user.id,
+                              updatedById: user.id,
+                            }),
+                          ),
+                        },
+                      }),
+                    ),
+                  },
+                }),
+              ),
             },
           },
         },
