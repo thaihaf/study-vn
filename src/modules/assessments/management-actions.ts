@@ -207,15 +207,21 @@ export async function deleteQuestion(form: FormData) {
   revalidatePath('/admin/questions');
 }
 
+const optionalPositiveInt = z.preprocess(
+  (value) =>
+    value === '' || value === null || value === undefined ? undefined : value,
+  z.coerce.number().int().positive().optional(),
+);
+
 const assessmentFormSchema = z.object({
   assessmentId: z.string().optional(),
   title: z.string().min(3).max(240),
   description: z.string().max(5000).default(''),
   type: z.enum(['QUIZ', 'MOCK_EXAM']),
   courseId: z.string().optional(),
-  timeLimitMinutes: z.coerce.number().int().positive().optional(),
+  timeLimitMinutes: optionalPositiveInt,
   passScore: z.coerce.number().int().min(0).max(100).default(70),
-  maximumAttempts: z.coerce.number().int().positive().optional(),
+  maximumAttempts: optionalPositiveInt,
   randomizeQuestions: z.enum(['on']).optional(),
   randomizeChoices: z.enum(['on']).optional(),
   feedbackMode: z
