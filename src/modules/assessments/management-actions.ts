@@ -2,7 +2,6 @@
 
 import { Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 import { db } from '@/lib/db';
@@ -260,7 +259,6 @@ export async function createAssessment(form: FormData) {
     },
   });
   revalidatePath('/admin/assessments');
-  redirect(`/admin/assessments?created=${assessment.id}`);
 }
 
 export async function updateAssessment(form: FormData) {
