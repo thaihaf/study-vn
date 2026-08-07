@@ -201,7 +201,10 @@ export default async function Page({
           style={{ marginTop: '1rem' }}
         >
           <AssessmentFields courses={courses} />
-          <ServerActionButton className="btn" pendingLabel="Đang tạo bài đánh giá...">
+          <ServerActionButton
+            className="btn"
+            pendingLabel="Đang tạo bài đánh giá..."
+          >
             Tạo bài đánh giá
           </ServerActionButton>
         </form>
@@ -253,7 +256,10 @@ export default async function Page({
                       Gỡ xuất bản
                     </ConfirmButton>
                   ) : (
-                    <ServerActionButton className="btn" pendingLabel="Đang xuất bản...">
+                    <ServerActionButton
+                      className="btn"
+                      pendingLabel="Đang xuất bản..."
+                    >
                       Xuất bản
                     </ServerActionButton>
                   )}
