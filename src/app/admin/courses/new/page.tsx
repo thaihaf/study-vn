@@ -6,7 +6,9 @@ export default async function NewCourse() {
   await requirePermission('course:edit');
   const aiConfigured =
     process.env.AI_PROVIDER === 'fake' ||
-    Boolean(process.env.OPENAI_MODEL && process.env['OPENAI_API' + '_KEY']);
+    Boolean(
+      process.env.OPENAI_MODEL && process.env['OPENAI_API' + '_KEY'],
+    );
 
   return (
     <>
