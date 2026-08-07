@@ -95,7 +95,10 @@ export default async function Editor({
           </p>
           <form action={restore}>
             <input type="hidden" name="versionId" value={latest.id} />
-            <ServerActionButton className="btn" pendingLabel="Đang tạo bản nháp...">
+            <ServerActionButton
+              className="btn"
+              pendingLabel="Đang tạo bản nháp..."
+            >
               Tạo bản nháp từ phiên bản này
             </ServerActionButton>
           </form>
