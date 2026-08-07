@@ -143,8 +143,13 @@ function AssessmentFields({
   );
 }
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ created?: string }>;
+}) {
   await requirePermission('course:edit');
+  const query = await searchParams;
   const [rows, questions, courses] = await Promise.all([
     db.assessment.findMany({
       include: {
@@ -178,6 +183,13 @@ export default async function Page() {
         riêng.
       </p>
 
+      {query.created && rows.some((row) => row.id === query.created) && (
+        <div className="card" role="status">
+          ✓ Đã tạo bài đánh giá. Bạn có thể thêm câu hỏi và xuất bản ngay bên
+          dưới.
+        </div>
+      )}
+
       <details className="card" open={rows.length === 0}>
         <summary>
           <b>+ Tạo bài đánh giá</b>
@@ -188,7 +200,9 @@ export default async function Page() {
           style={{ marginTop: '1rem' }}
         >
           <AssessmentFields courses={courses} />
-          <button className="btn">Tạo bài đánh giá</button>
+          <button className="btn" type="submit">
+            Tạo bài đánh giá
+          </button>
         </form>
       </details>
 
@@ -201,7 +215,12 @@ export default async function Page() {
             (question) => !assigned.has(question.id),
           );
           return (
-            <article className="card grid" key={assessment.id}>
+            <article
+              className="card grid"
+              key={assessment.id}
+              data-assessment-id={assessment.id}
+              aria-label={`Bài đánh giá: ${assessment.title}`}
+            >
               <div className="builder-row">
                 <div>
                   <span className="status">
