@@ -1,4 +1,5 @@
 import { ConfirmButton } from '@/components/shared/confirm-button';
+import { ServerActionButton } from '@/components/shared/server-action-button';
 import { db } from '@/lib/db';
 import {
   createQuestion,
@@ -29,8 +30,13 @@ function choicesText(
     .join('\n');
 }
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ focus?: string; state?: string }>;
+}) {
   await requirePermission('course:edit');
+  const query = await searchParams;
   const rows = await db.question.findMany({
     include: {
       bank: true,
@@ -42,6 +48,10 @@ export default async function Page() {
     take: 300,
   });
 
+  const focused = query.focus
+    ? rows.find((question) => question.id === query.focus)
+    : null;
+
   return (
     <>
       <h1 style={{ fontSize: '2.5rem' }}>Ngân hàng câu hỏi</h1>
@@ -50,6 +60,22 @@ export default async function Page() {
         trong bài đánh giá không thể xóa, nhưng vẫn có thể chỉnh sửa trước khi
         tạo attempt mới; attempt cũ luôn giữ snapshot bất biến.
       </p>
+
+      {query.state === 'created' && focused && (
+        <div className="card" role="status">
+          ✓ Đã tạo câu hỏi “{focused.prompt}”.
+        </div>
+      )}
+      {query.state === 'updated' && focused && (
+        <div className="card" role="status">
+          ✓ Đã lưu thay đổi cho câu hỏi “{focused.prompt}”.
+        </div>
+      )}
+      {query.state === 'deleted' && (
+        <div className="card" role="status">
+          ✓ Đã xóa câu hỏi.
+        </div>
+      )}
 
       <details className="card" open={rows.length === 0}>
         <summary>
@@ -138,13 +164,19 @@ export default async function Page() {
             Rubric (JSON hoặc văn bản)
             <textarea className="input code-input" name="rubric" rows={5} />
           </label>
-          <button className="btn">Tạo câu hỏi</button>
+          <ServerActionButton className="btn" pendingLabel="Đang tạo câu hỏi...">
+            Tạo câu hỏi
+          </ServerActionButton>
         </form>
       </details>
 
       <div className="grid" style={{ marginTop: '1rem' }}>
         {rows.map((question) => (
-          <article className="card" key={question.id}>
+          <article
+            className="card"
+            key={question.id}
+            aria-label={`Câu hỏi: ${question.prompt}`}
+          >
             <div className="builder-row">
               <div>
                 <span className="status">
@@ -299,7 +331,12 @@ export default async function Page() {
                     }
                   />
                 </label>
-                <button className="btn secondary">Lưu thay đổi</button>
+                <ServerActionButton
+                  className="btn secondary"
+                  pendingLabel="Đang lưu thay đổi..."
+                >
+                  Lưu thay đổi
+                </ServerActionButton>
               </form>
             </details>
           </article>
