@@ -29,14 +29,43 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const user = await db.user.findUnique({
           where: { email: parsed.data.email.toLowerCase() },
         });
+        if (!user?.passwordHash) return null;
 
-        if (
-          !user?.passwordHash ||
-          !(await bcrypt.compare(parsed.data.password, user.passwordHash))
-        ) {
+        const recentFailures = await db.auditLog.count({
+          where: {
+            actorId: user.id,
+            action: 'AUTH_LOGIN_FAILED',
+            createdAt: { gte: new Date(Date.now() - 15 * 60 * 1000) },
+          },
+        });
+        if (recentFailures >= 10) return null;
+
+        const valid = await bcrypt.compare(
+          parsed.data.password,
+          user.passwordHash,
+        );
+        if (!valid) {
+          await db.auditLog.create({
+            data: {
+              actorId: user.id,
+              action: 'AUTH_LOGIN_FAILED',
+              entityType: 'User',
+              entityId: user.id,
+            },
+          });
           return null;
         }
 
+        if (user.role !== 'LEARNER') {
+          await db.auditLog.create({
+            data: {
+              actorId: user.id,
+              action: 'AUTH_ADMIN_LOGIN_SUCCESS',
+              entityType: 'User',
+              entityId: user.id,
+            },
+          });
+        }
         return user;
       },
     }),
@@ -48,14 +77,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.role = user.role;
         token.canPublish = user.canPublish;
       }
-
       return token;
     },
     async session({ session, token }) {
       session.user.id = token.sub ?? '';
       session.user.role = token.role as Role;
       session.user.canPublish = Boolean(token.canPublish);
-
       return session;
     },
   },
