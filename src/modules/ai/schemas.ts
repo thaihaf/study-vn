@@ -80,7 +80,7 @@ const blockSchema = z.discriminatedUnion('type', [
 
 export const lessonSchema = z.object({
   title: z.string(),
-  blocks: z.array(blockSchema).min(5),
+  blocks: z.array(blockSchema).min(3),
 });
 
 export type Blueprint = z.infer<typeof blueprintSchema>;
