@@ -1,10 +1,18 @@
 import OpenAI from 'openai';
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  timeout: 45_000,
-  maxRetries: 2,
-});
+let client: OpenAI | null = null;
+
+function getClient() {
+  if (!process.env.OPENAI_API_KEY || !process.env.OPENAI_MODEL) {
+    throw new Error('AI_NOT_CONFIGURED');
+  }
+  client ??= new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    timeout: 45_000,
+    maxRetries: 2,
+  });
+  return client;
+}
 
 export async function runStructured<T>({
   name,
@@ -17,11 +25,8 @@ export async function runStructured<T>({
   developer: string;
   user: string;
 }): Promise<T> {
-  if (!process.env.OPENAI_API_KEY || !process.env.OPENAI_MODEL) {
-    throw new Error('AI_NOT_CONFIGURED');
-  }
-  const response = await client.responses.create({
-    model: process.env.OPENAI_MODEL,
+  const response = await getClient().responses.create({
+    model: process.env.OPENAI_MODEL!,
     store: false,
     input: [
       { role: 'developer', content: developer },
