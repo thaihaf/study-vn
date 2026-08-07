@@ -48,7 +48,7 @@ export default async function Page() {
       <h2>Quiz và thi thử</h2>
       <div className="grid">
         {objective.map((assessment) => (
-          <Link
+          <a
             className="card"
             style={{ display: 'block' }}
             href={`/assessments/${assessment.id}`}
@@ -61,7 +61,7 @@ export default async function Page() {
               {assessment.questions.length} câu · điểm đạt{' '}
               {assessment.passScore}%
             </small>
-          </Link>
+          </a>
         ))}
         {!objective.length && (
           <div className="card muted">
