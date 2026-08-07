@@ -1,6 +1,6 @@
 import { createCourse } from '@/app/actions';
-import { createCourseFromDocuments } from '@/modules/courses/create-from-documents';
 import { requirePermission } from '@/modules/auth/session';
+import { createCourseFromDocuments } from '@/modules/courses/create-from-documents';
 
 export default async function NewCourse() {
   await requirePermission('course:edit');
@@ -34,6 +34,26 @@ export default async function NewCourse() {
             kiểm thử.
           </div>
         )}
+
+        <label className="label">
+          Kiểu khóa học
+          <select
+            className="input"
+            name="template"
+            defaultValue="LEARN_EXAM_INTERVIEW"
+          >
+            <option value="GENERAL_LEARNING">Học kiến thức</option>
+            <option value="EXAM_PREP">Ôn thi</option>
+            <option value="INTERVIEW_PREP">Phỏng vấn</option>
+            <option value="LEARN_EXAM_INTERVIEW">
+              Học + Thi + Phỏng vấn
+            </option>
+          </select>
+          <span className="muted">
+            Hệ thống tự áp dụng chuẩn chung về cách dạy, kiểm tra, tự luận và
+            phỏng vấn; không cần upload lại file hướng dẫn format.
+          </span>
+        </label>
 
         <label className="label">
           Tài liệu để AI nghiên cứu
