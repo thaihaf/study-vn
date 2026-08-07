@@ -52,15 +52,9 @@ export async function validateVersion(
 
   const errors: string[] = [];
   const warnings: string[] = [];
+  if (!version) return { errors: ['Không tìm thấy phiên bản'], warnings };
 
-  if (!version) {
-    return { errors: ['Không tìm thấy phiên bản'], warnings };
-  }
-
-  if (
-    !version.course.title.trim() ||
-    !version.course.shortDescription.trim()
-  ) {
+  if (!version.course.title.trim() || !version.course.shortDescription.trim()) {
     errors.push('Thiếu metadata bắt buộc');
   }
   if (!version.course.coverImageUrl) warnings.push('Chưa có ảnh bìa');
@@ -71,6 +65,9 @@ export async function validateVersion(
     if (courseModule.position !== moduleIndex) {
       errors.push('Thứ tự mô-đun không hợp lệ');
     }
+    if (!courseModule.lessons.length) {
+      errors.push(`Mô-đun “${courseModule.title}” chưa có bài học`);
+    }
 
     for (const [lessonIndex, lesson] of courseModule.lessons.entries()) {
       if (lesson.position !== lessonIndex) {
@@ -80,13 +77,15 @@ export async function validateVersion(
         errors.push(`Bài “${lesson.title}” chưa có nội dung`);
       }
 
-      for (const block of lesson.blocks) {
+      for (const [blockIndex, block] of lesson.blocks.entries()) {
+        if (block.position !== blockIndex) {
+          errors.push(`Thứ tự block trong bài “${lesson.title}” không hợp lệ`);
+        }
         try {
           validateBlock(block.type as BlockKind, block.contentJson);
         } catch {
           errors.push(`Block ${block.id} không đúng schema`);
         }
-
         if (hasUnsafeContent(block.contentJson)) {
           errors.push(`Block ${block.id} chứa nội dung không an toàn`);
         }
@@ -100,7 +99,7 @@ export async function validateVersion(
     }
   }
 
-  return { errors: [...new Set(errors)], warnings };
+  return { errors: [...new Set(errors)], warnings: [...new Set(warnings)] };
 }
 
 export async function publishVersion(
@@ -111,9 +110,16 @@ export async function publishVersion(
   return db.$transaction(async (transaction) => {
     const version = await transaction.courseVersion.findUnique({
       where: { id: versionId },
+      include: { course: true },
     });
-
-    if (!version || version.status === 'PUBLISHED') {
+    if (!version) throw new Error('VERSION_NOT_FOUND');
+    if (
+      version.status === 'PUBLISHED' &&
+      version.course.currentPublishedVersionId === version.id
+    ) {
+      return version;
+    }
+    if (version.status === 'PUBLISHED' || version.status === 'ARCHIVED') {
       throw new Error('VERSION_IMMUTABLE');
     }
 
@@ -139,6 +145,7 @@ export async function publishVersion(
       data: {
         currentPublishedVersionId: versionId,
         visibility: 'PUBLIC',
+        archivedAt: null,
       },
     });
     await transaction.auditLog.create({
@@ -149,7 +156,6 @@ export async function publishVersion(
         entityId: versionId,
       },
     });
-
     return published;
   });
 }
@@ -164,9 +170,16 @@ export async function restoreVersion(
       where: { id: sourceId },
       include: {
         modules: {
+          orderBy: { position: 'asc' },
           include: {
             lessons: {
-              include: { blocks: true },
+              orderBy: { position: 'asc' },
+              include: {
+                blocks: {
+                  orderBy: { position: 'asc' },
+                  include: { citations: true },
+                },
+              },
             },
           },
         },
@@ -177,8 +190,19 @@ export async function restoreVersion(
       _max: { versionNumber: true },
     });
 
-    const modules: Prisma.ModuleCreateWithoutVersionInput[] =
-      source.modules.map((courseModule) => {
+    // Keep exactly one active draft. Existing unsent drafts are archived rather
+    // than overwritten, so their history remains inspectable.
+    await transaction.courseVersion.updateMany({
+      where: {
+        courseId: source.courseId,
+        status: 'DRAFT',
+        id: { not: source.id },
+      },
+      data: { status: 'ARCHIVED' },
+    });
+
+    const modules: Prisma.ModuleCreateWithoutVersionInput[] = source.modules.map(
+      (courseModule) => {
         const lessons: Prisma.LessonCreateWithoutModuleInput[] =
           courseModule.lessons.map((lesson) => {
             const blocks: Prisma.LessonBlockCreateWithoutLessonInput[] =
@@ -190,6 +214,13 @@ export async function restoreVersion(
                 generatedByAI: block.generatedByAI,
                 createdById: actorId,
                 updatedById: actorId,
+                citations: block.citations.length
+                  ? {
+                      create: block.citations.map((citation) => ({
+                        chunkId: citation.chunkId,
+                      })),
+                    }
+                  : undefined,
               }));
 
             return {
@@ -199,9 +230,7 @@ export async function restoreVersion(
               description: lesson.description,
               position: lesson.position,
               estimatedMinutes: lesson.estimatedMinutes,
-              learningObjectives: optionalJsonInput(
-                lesson.learningObjectives,
-              ),
+              learningObjectives: optionalJsonInput(lesson.learningObjectives),
               blocks: { create: blocks },
             };
           });
@@ -212,14 +241,13 @@ export async function restoreVersion(
           description: courseModule.description,
           position: courseModule.position,
           estimatedMinutes: courseModule.estimatedMinutes,
-          learningObjectives: optionalJsonInput(
-            courseModule.learningObjectives,
-          ),
+          learningObjectives: optionalJsonInput(courseModule.learningObjectives),
           lessons: { create: lessons },
         };
-      });
+      },
+    );
 
-    return transaction.courseVersion.create({
+    const restored = await transaction.courseVersion.create({
       data: {
         courseId: source.courseId,
         versionNumber: (maximum._max.versionNumber ?? 0) + 1,
@@ -229,5 +257,15 @@ export async function restoreVersion(
         modules: { create: modules },
       },
     });
+    await transaction.auditLog.create({
+      data: {
+        actorId,
+        action: 'COURSE_VERSION_RESTORED',
+        entityType: 'CourseVersion',
+        entityId: restored.id,
+        metadata: { sourceVersionId: source.id },
+      },
+    });
+    return restored;
   });
 }
