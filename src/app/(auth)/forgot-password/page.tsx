@@ -1,3 +1,4 @@
+import { SubmitButton } from '@/components/ui/submit-button';
 import { requestPasswordReset } from '@/modules/auth/password-actions';
 
 export default async function Forgot({
@@ -11,7 +12,7 @@ export default async function Forgot({
       <form className="card grid" action={requestPasswordReset}>
         <h1 style={{ fontSize: '2rem' }}>Đặt lại mật khẩu</h1>
         {sent === '1' ? (
-          <div className="card">
+          <div className="card" role="status">
             Nếu tài khoản tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.
           </div>
         ) : (
@@ -30,7 +31,7 @@ export default async function Forgot({
             autoComplete="email"
           />
         </label>
-        <button className="btn">Gửi hướng dẫn</button>
+        <SubmitButton idleLabel="Gửi hướng dẫn" pendingLabel="Đang gửi…" />
       </form>
     </div>
   );
