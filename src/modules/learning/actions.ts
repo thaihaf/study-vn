@@ -1,6 +1,5 @@
 'use server';
 
-import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 import { db } from '@/lib/db';
@@ -29,7 +28,7 @@ export async function enrollCourse(form: FormData) {
     update: { versionId: course.currentPublishedVersionId },
   });
 
-  redirect(`/courses/${course.slug}?enrolled=1`);
+  return { redirectTo: `/courses/${course.slug}?enrolled=1` };
 }
 
 export async function lessonInteractionRedirect(form: FormData) {
@@ -106,5 +105,5 @@ export async function lessonInteractionRedirect(form: FormData) {
     }
   }
 
-  redirect(returnTo);
+  return { redirectTo: returnTo };
 }
