@@ -52,9 +52,7 @@ export async function createCourseFromDocuments(form: FormData) {
       mimeType: file.type || 'text/plain',
       size: file.size,
     });
-    const text = (await extractTextFromUpload(file))
-      .replace(/\0/g, '')
-      .trim();
+    const text = (await extractTextFromUpload(file)).replace(/\0/g, '').trim();
     if (!text) throw new Error(`SOURCE_HAS_NO_TEXT:${file.name}`);
     const parts = chunks(text);
 
