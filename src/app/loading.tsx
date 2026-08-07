@@ -2,7 +2,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Loading() {
   return (
-    <div className="page container" aria-label="Đang tải nội dung">
+    <div
+      className="page container"
+      role="status"
+      aria-live="polite"
+      aria-label="Đang tải nội dung"
+    >
       <div className="grid" style={{ maxWidth: 760 }}>
         <Skeleton style={{ width: 140, height: 28 }} />
         <Skeleton style={{ width: '72%', height: 54 }} />
