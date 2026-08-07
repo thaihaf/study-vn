@@ -1,6 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
@@ -13,10 +12,9 @@ export async function publishCourseVersion(form: FormData) {
   const versionId = z.string().parse(form.get('versionId'));
   const published = await publishVersion(db, versionId, user.id);
 
-  revalidatePath(`/admin/courses/${published.courseId}/edit`);
-  revalidatePath('/admin/courses');
-  revalidatePath('/explore');
-  revalidatePath('/');
-
+  // These pages are dynamic and read fresh PostgreSQL state on each request.
+  // Redirect directly after the transaction instead of combining
+  // revalidatePath() with redirect(), which can abort the Server Action RSC
+  // response before the client applies the navigation.
   redirect(`/admin/courses/${published.courseId}/edit?published=1`);
 }
