@@ -337,9 +337,7 @@ export default async function Page({
                       </span>
                       {!assessment.published && (
                         <div className="builder-actions">
-                          <ActionRedirectForm
-                            action={moveAssessmentQuestion}
-                          >
+                          <ActionRedirectForm action={moveAssessmentQuestion}>
                             <input
                               type="hidden"
                               name="assessmentId"
