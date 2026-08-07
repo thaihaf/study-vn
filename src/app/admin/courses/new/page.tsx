@@ -6,9 +6,7 @@ export default async function NewCourse() {
   await requirePermission('course:edit');
   const aiConfigured =
     process.env.AI_PROVIDER === 'fake' ||
-    Boolean(
-      process.env.OPENAI_MODEL && process.env['OPENAI_API' + '_KEY'],
-    );
+    Boolean(process.env.OPENAI_MODEL && process.env['OPENAI_API' + '_KEY']);
 
   return (
     <>
@@ -18,7 +16,7 @@ export default async function NewCourse() {
         hoặc tạo một bản nháp thủ công.
       </p>
 
-      <form className="grid card" action={createCourseFromDocuments}>
+      <form className="card grid" action={createCourseFromDocuments}>
         <div>
           <span className="status">AI + TÀI LIỆU</span>
           <h2>Tạo khóa học từ tài liệu</h2>
@@ -32,8 +30,8 @@ export default async function NewCourse() {
         {!aiConfigured && (
           <div className="warning-card card">
             AI chưa được cấu hình. Cần cấu hình API key và{' '}
-            <code>OPENAI_MODEL</code>, hoặc <code>AI_PROVIDER=fake</code> để kiểm
-            thử.
+            <code>OPENAI_MODEL</code>, hoặc <code>AI_PROVIDER=fake</code> để
+            kiểm thử.
           </div>
         )}
 
@@ -53,7 +51,7 @@ export default async function NewCourse() {
         </label>
 
         <label className="label">
-          Tên khóa học
+          Tên khóa học cho AI
           <input
             className="input"
             name="title"
@@ -77,11 +75,11 @@ export default async function NewCourse() {
 
         <div className="builder-two-cols">
           <label className="label">
-            Danh mục
+            Danh mục khóa học AI
             <input className="input" name="category" required />
           </label>
           <label className="label">
-            Trình độ
+            Trình độ khóa học AI
             <select className="input" name="level" defaultValue="Trung cấp">
               <option>Cơ bản</option>
               <option>Trung cấp</option>
