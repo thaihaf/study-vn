@@ -1,7 +1,6 @@
 'use server';
 
 import { Prisma } from '@prisma/client';
-import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
@@ -98,6 +97,14 @@ function validateChoices(
   });
 }
 
+function questionsPath(id?: string, state?: string) {
+  const query = new URLSearchParams();
+  if (id) query.set('focus', id);
+  if (state) query.set('state', state);
+  const suffix = query.toString();
+  return `/admin/questions${suffix ? `?${suffix}` : ''}`;
+}
+
 export async function createQuestion(form: FormData) {
   const user = await requirePermission('course:edit');
   const raw = questionFormSchema.parse(Object.fromEntries(form));
@@ -137,7 +144,7 @@ export async function createQuestion(form: FormData) {
       entityId: question.id,
     },
   });
-  revalidatePath('/admin/questions');
+  redirect(questionsPath(question.id, 'created'));
 }
 
 export async function updateQuestion(form: FormData) {
@@ -186,8 +193,7 @@ export async function updateQuestion(form: FormData) {
       },
     });
   });
-  revalidatePath('/admin/questions');
-  revalidatePath('/admin/assessments');
+  redirect(questionsPath(raw.questionId, 'updated'));
 }
 
 export async function deleteQuestion(form: FormData) {
@@ -205,7 +211,7 @@ export async function deleteQuestion(form: FormData) {
       entityId: id,
     },
   });
-  revalidatePath('/admin/questions');
+  redirect(questionsPath(undefined, 'deleted'));
 }
 
 const optionalPositiveInt = z.preprocess(
@@ -263,7 +269,6 @@ export async function createAssessment(form: FormData) {
       entityId: assessment.id,
     },
   });
-  revalidatePath('/admin/assessments');
   redirect(assessmentPath(assessment.id, true));
 }
 
@@ -284,7 +289,6 @@ export async function updateAssessment(form: FormData) {
       entityId: input.assessmentId,
     },
   });
-  revalidatePath('/admin/assessments');
   redirect(assessmentPath(input.assessmentId));
 }
 
@@ -305,7 +309,6 @@ export async function addQuestionToAssessment(form: FormData) {
     update: {},
     create: { ...input, position },
   });
-  revalidatePath('/admin/assessments');
   redirect(assessmentPath(input.assessmentId));
 }
 
@@ -336,7 +339,6 @@ export async function removeQuestionFromAssessment(form: FormData) {
       data: { position },
     });
   }
-  revalidatePath('/admin/assessments');
   redirect(assessmentPath(input.assessmentId));
 }
 
@@ -379,7 +381,6 @@ export async function moveAssessmentQuestion(form: FormData) {
       data: { position },
     });
   }
-  revalidatePath('/admin/assessments');
   redirect(assessmentPath(input.assessmentId));
 }
 
@@ -407,9 +408,5 @@ export async function toggleAssessmentPublished(form: FormData) {
       entityId: id,
     },
   });
-  revalidatePath('/admin/assessments');
-  revalidatePath('/practice');
-  revalidatePath('/essays');
-  revalidatePath('/interviews');
   redirect(assessmentPath(id));
 }
