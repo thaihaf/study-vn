@@ -51,7 +51,10 @@ export default async function Home() {
             </div>
           </div>
 
-          <aside className="hero-roadmap card" aria-label="Minh họa lộ trình học">
+          <aside
+            className="hero-roadmap card"
+            aria-label="Minh họa lộ trình học"
+          >
             <div className="roadmap-heading">
               <div>
                 <small>Lộ trình hôm nay</small>
