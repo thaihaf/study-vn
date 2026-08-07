@@ -3,8 +3,10 @@ import { expect, test } from '@playwright/test';
 const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@ci.example.test';
 const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'AdminPassword123!';
 
-function runSuffix(retry: number) {
-  return `${process.env.GITHUB_RUN_ID ?? Date.now()}-${retry}`;
+test.describe.configure({ retries: 0 });
+
+function runSuffix() {
+  return process.env.GITHUB_RUN_ID ?? String(Date.now());
 }
 
 test('public landing, navigation and health', async ({ page, request }) => {
@@ -22,8 +24,8 @@ test('public landing, navigation and health', async ({ page, request }) => {
 
 test('admin publishes content and learner completes the core journey', async ({
   page,
-}, testInfo) => {
-  const suffix = runSuffix(testInfo.retry);
+}) => {
+  const suffix = runSuffix();
   const learnerEmail = `e2e-learner+${suffix}@ci.example.test`;
   const learnerPassword = 'LearnerPassword123!';
   const courseTitle = `Khóa học kiểm thử E2E ${suffix}`;
@@ -34,7 +36,7 @@ test('admin publishes content and learner completes the core journey', async ({
   await page.getByLabel('Email', { exact: true }).fill(adminEmail);
   await page.getByLabel('Mật khẩu', { exact: true }).fill(adminPassword);
   await page.getByRole('button', { name: 'Đăng nhập' }).click();
-  await expect(page).toHaveURL(/\/admin(?:$|\/)/, { timeout: 15_000 });
+  await expect(page).toHaveURL(/\/admin(?:$|\/)/);
 
   await page.goto('/admin/courses/new');
   await page.getByLabel('Tên khóa học').fill(courseTitle);
@@ -43,18 +45,12 @@ test('admin publishes content and learner completes the core journey', async ({
     .fill('Khóa học được tạo tự động để kiểm tra luồng xuất bản đầu cuối.');
   await page.getByLabel('Danh mục').fill('Kiểm thử');
   await page.getByRole('button', { name: 'Tạo bản nháp' }).click();
-  await expect(page).toHaveURL(/\/admin\/courses\/.+\/edit/, {
-    timeout: 15_000,
-  });
-  await expect(page.getByText('Không có lỗi chặn xuất bản.')).toBeVisible({
-    timeout: 15_000,
-  });
+  await expect(page).toHaveURL(/\/admin\/courses\/.+\/edit/);
+  await expect(page.getByText('Không có lỗi chặn xuất bản.')).toBeVisible();
 
   page.once('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: 'Xuất bản ngay' }).click();
-  await expect(page.getByText(/PUBLISHED/).first()).toBeVisible({
-    timeout: 15_000,
-  });
+  await expect(page.getByText(/PUBLISHED/).first()).toBeVisible();
 
   await page.goto('/admin/questions');
   const questionCreateForm = page
@@ -70,9 +66,9 @@ test('admin publishes content and learner completes the core journey', async ({
     .fill('Đáp án đầu tiên được đánh dấu đúng.');
   await questionCreateForm.getByLabel('Trạng thái').selectOption('PUBLISHED');
   await questionCreateForm.getByRole('button', { name: 'Tạo câu hỏi' }).click();
-  await expect(page.getByRole('heading', { name: questionPrompt })).toBeVisible(
-    { timeout: 15_000 },
-  );
+  await expect(
+    page.getByRole('heading', { name: questionPrompt }),
+  ).toBeVisible();
 
   await page.goto('/admin/assessments');
   const assessmentCreateForm = page
@@ -90,34 +86,36 @@ test('admin publishes content and learner completes the core journey', async ({
   const assessmentCard = page
     .locator('article.card')
     .filter({ hasText: assessmentTitle });
-  await expect(assessmentCard).toBeVisible({ timeout: 15_000 });
-  await assessmentCard
-    .locator('select[name="questionId"]')
-    .selectOption({ index: 1 });
+  await expect(assessmentCard).toBeVisible();
+
+  const questionSelect = assessmentCard.locator('select[name="questionId"]');
+  const optionLabel = `SINGLE_CHOICE · ${questionPrompt.slice(0, 90)}`;
+  await questionSelect.selectOption({ label: optionLabel });
   await assessmentCard.getByRole('button', { name: 'Thêm câu' }).click();
+  await expect(assessmentCard.getByText(questionPrompt)).toBeVisible();
+
   page.once('dialog', (dialog) => dialog.accept());
   await assessmentCard.getByRole('button', { name: 'Xuất bản' }).click();
-  await expect(assessmentCard.getByText('Đã xuất bản')).toBeVisible({
-    timeout: 15_000,
-  });
+  await expect(
+    assessmentCard.getByRole('button', { name: 'Gỡ xuất bản' }),
+  ).toBeVisible();
 
   await page.getByRole('button', { name: 'Đăng xuất' }).click();
-  await expect(page).toHaveURL('/', { timeout: 15_000 });
+  await expect(page).toHaveURL('/');
 
   await page.goto('/register');
   await page.getByLabel('Tên của bạn').fill('E2E Learner');
   await page.getByLabel('Email', { exact: true }).fill(learnerEmail);
   await page.getByLabel(/Mật khẩu/).fill(learnerPassword);
   await page.getByRole('button', { name: 'Tạo tài khoản' }).click();
-  await expect(page).toHaveURL(/\/dashboard/, { timeout: 15_000 });
+  await expect(page).toHaveURL(/\/dashboard/);
 
   await page.goto('/explore');
   await page.getByRole('link', { name: new RegExp(courseTitle) }).click();
   await page.getByRole('button', { name: 'Bắt đầu học' }).click();
   await page.getByRole('link', { name: /^Tiếp tục:/ }).click();
-  await expect(page.getByRole('heading', { name: 'Bài học 1' })).toBeVisible({
-    timeout: 15_000,
-  });
+  await expect(page).toHaveURL(/\/learn\//);
+  await expect(page.getByRole('heading', { name: 'Bài học 1' })).toBeVisible();
 
   await page.getByLabel('Ghi chú riêng').fill('Ghi chú E2E của người học.');
   await page.getByRole('button', { name: 'Lưu ghi chú' }).click();
@@ -125,7 +123,7 @@ test('admin publishes content and learner completes the core journey', async ({
   await page.getByRole('button', { name: 'Hoàn thành bài' }).click();
   await expect(
     page.getByRole('button', { name: '✓ Đã hoàn thành' }),
-  ).toBeVisible({ timeout: 15_000 });
+  ).toBeVisible();
 
   await page.goto('/notes');
   await expect(page.getByText('Ghi chú E2E của người học.')).toBeVisible();
@@ -139,6 +137,6 @@ test('admin publishes content and learner completes the core journey', async ({
   await page.getByRole('button', { name: 'Nộp bài' }).click();
   await expect(
     page.getByRole('heading', { name: /Kết quả: 100%/ }),
-  ).toBeVisible({ timeout: 15_000 });
+  ).toBeVisible();
   await expect(page.getByText('✓ Chính xác')).toBeVisible();
 });
