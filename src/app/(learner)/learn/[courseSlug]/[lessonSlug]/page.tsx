@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { LessonBlockView } from '@/components/content/lesson-block';
+import { ActionRedirectForm } from '@/components/shared/action-redirect-form';
 import { ServerActionButton } from '@/components/shared/server-action-button';
 import { db } from '@/lib/db';
 import { requireUser } from '@/modules/auth/session';
@@ -144,7 +145,7 @@ export default async function Learn({
           ) : (
             <span />
           )}
-          <form action={lessonInteractionRedirect}>
+          <ActionRedirectForm action={lessonInteractionRedirect}>
             <input type="hidden" name="lessonId" value={lesson.id} />
             <input
               type="hidden"
@@ -159,7 +160,7 @@ export default async function Learn({
             >
               {progress?.completedAt ? '✓ Đã hoàn thành' : 'Hoàn thành bài'}
             </ServerActionButton>
-          </form>
+          </ActionRedirectForm>
           {lessons[lessonIndex + 1] ? (
             <Link
               className="btn secondary"
@@ -185,7 +186,10 @@ export default async function Learn({
             </small>
           )}
         </section>
-        <form className="card grid" action={lessonInteractionRedirect}>
+        <ActionRedirectForm
+          className="card grid"
+          action={lessonInteractionRedirect}
+        >
           <input type="hidden" name="lessonId" value={lesson.id} />
           <input
             type="hidden"
@@ -210,8 +214,8 @@ export default async function Learn({
           >
             Lưu ghi chú
           </ServerActionButton>
-        </form>
-        <form action={lessonInteractionRedirect}>
+        </ActionRedirectForm>
+        <ActionRedirectForm action={lessonInteractionRedirect}>
           <input type="hidden" name="lessonId" value={lesson.id} />
           <input
             type="hidden"
@@ -227,7 +231,7 @@ export default async function Learn({
           >
             {bookmark ? '★ Bỏ đánh dấu' : '☆ Đánh dấu'}
           </ServerActionButton>
-        </form>
+        </ActionRedirectForm>
         <nav className="card grid" aria-label="Công cụ học tập">
           <b>Công cụ</b>
           <Link href="/notes">Ghi chú của tôi →</Link>
