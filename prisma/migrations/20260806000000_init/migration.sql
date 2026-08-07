@@ -2,49 +2,49 @@
 CREATE SCHEMA IF NOT EXISTS "public";
 
 -- CreateEnum
-CREATE TYPE "public"."Role" AS ENUM ('SUPER_ADMIN', 'CONTENT_ADMIN', 'REVIEWER', 'INSTRUCTOR', 'LEARNER');
+CREATE TYPE "Role" AS ENUM ('SUPER_ADMIN', 'CONTENT_ADMIN', 'REVIEWER', 'INSTRUCTOR', 'LEARNER');
 
 -- CreateEnum
-CREATE TYPE "public"."VersionStatus" AS ENUM ('DRAFT', 'IN_REVIEW', 'PUBLISHED', 'ARCHIVED');
+CREATE TYPE "VersionStatus" AS ENUM ('DRAFT', 'IN_REVIEW', 'PUBLISHED', 'ARCHIVED');
 
 -- CreateEnum
-CREATE TYPE "public"."Visibility" AS ENUM ('PUBLIC', 'UNLISTED', 'PRIVATE');
+CREATE TYPE "Visibility" AS ENUM ('PUBLIC', 'UNLISTED', 'PRIVATE');
 
 -- CreateEnum
-CREATE TYPE "public"."BlockType" AS ENUM ('HEADING', 'PARAGRAPH', 'CALLOUT', 'EXAMPLE', 'CODE', 'DIAGRAM', 'TABLE', 'IMAGE', 'QUIZ_EMBED', 'FLASHCARD_SET', 'SCENARIO', 'ESSAY_PROMPT', 'INTERVIEW_QUESTION', 'SOURCE_REFERENCE', 'SUMMARY');
+CREATE TYPE "BlockType" AS ENUM ('HEADING', 'PARAGRAPH', 'CALLOUT', 'EXAMPLE', 'CODE', 'DIAGRAM', 'TABLE', 'IMAGE', 'QUIZ_EMBED', 'FLASHCARD_SET', 'SCENARIO', 'ESSAY_PROMPT', 'INTERVIEW_QUESTION', 'SOURCE_REFERENCE', 'SUMMARY');
 
 -- CreateEnum
-CREATE TYPE "public"."QuestionType" AS ENUM ('SINGLE_CHOICE', 'MULTIPLE_CHOICE', 'TRUE_FALSE', 'SHORT_TEXT', 'ESSAY', 'CODE_REVIEW', 'SCENARIO');
+CREATE TYPE "QuestionType" AS ENUM ('SINGLE_CHOICE', 'MULTIPLE_CHOICE', 'TRUE_FALSE', 'SHORT_TEXT', 'ESSAY', 'CODE_REVIEW', 'SCENARIO');
 
 -- CreateEnum
-CREATE TYPE "public"."ContentStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED');
+CREATE TYPE "ContentStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED');
 
 -- CreateEnum
-CREATE TYPE "public"."AssessmentType" AS ENUM ('QUIZ', 'MOCK_EXAM');
+CREATE TYPE "AssessmentType" AS ENUM ('QUIZ', 'MOCK_EXAM');
 
 -- CreateEnum
-CREATE TYPE "public"."AttemptStatus" AS ENUM ('IN_PROGRESS', 'SUBMITTED', 'GRADED');
+CREATE TYPE "AttemptStatus" AS ENUM ('IN_PROGRESS', 'SUBMITTED', 'GRADED');
 
 -- CreateEnum
-CREATE TYPE "public"."SourceType" AS ENUM ('OFFICIAL_DOCUMENT', 'OFFICIAL_PUBLICATION', 'THIRD_PARTY_MATERIAL', 'ADMIN_WRITTEN', 'WEB_REFERENCE', 'OTHER');
+CREATE TYPE "SourceType" AS ENUM ('OFFICIAL_DOCUMENT', 'OFFICIAL_PUBLICATION', 'THIRD_PARTY_MATERIAL', 'ADMIN_WRITTEN', 'WEB_REFERENCE', 'OTHER');
 
 -- CreateEnum
-CREATE TYPE "public"."ProcessingStatus" AS ENUM ('PENDING', 'PROCESSING', 'READY', 'FAILED');
+CREATE TYPE "ProcessingStatus" AS ENUM ('PENDING', 'PROCESSING', 'READY', 'FAILED');
 
 -- CreateEnum
-CREATE TYPE "public"."JobStatus" AS ENUM ('QUEUED', 'RUNNING', 'SUCCEEDED', 'FAILED', 'CANCELLED');
+CREATE TYPE "JobStatus" AS ENUM ('QUEUED', 'RUNNING', 'SUCCEEDED', 'FAILED', 'CANCELLED');
 
 -- CreateEnum
-CREATE TYPE "public"."ReviewDecision" AS ENUM ('APPROVED', 'REJECTED', 'COMMENT');
+CREATE TYPE "ReviewDecision" AS ENUM ('APPROVED', 'REJECTED', 'COMMENT');
 
 -- CreateTable
-CREATE TABLE "public"."User" (
+CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "name" TEXT,
     "email" TEXT NOT NULL,
     "emailVerified" TIMESTAMP(3),
     "passwordHash" TEXT,
-    "role" "public"."Role" NOT NULL DEFAULT 'LEARNER',
+    "role" "Role" NOT NULL DEFAULT 'LEARNER',
     "canPublish" BOOLEAN NOT NULL DEFAULT false,
     "image" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -54,7 +54,7 @@ CREATE TABLE "public"."User" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."Account" (
+CREATE TABLE "Account" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "type" TEXT NOT NULL,
@@ -72,7 +72,7 @@ CREATE TABLE "public"."Account" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."Session" (
+CREATE TABLE "Session" (
     "id" TEXT NOT NULL,
     "sessionToken" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -82,14 +82,14 @@ CREATE TABLE "public"."Session" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."VerificationToken" (
+CREATE TABLE "VerificationToken" (
     "identifier" TEXT NOT NULL,
     "token" TEXT NOT NULL,
     "expires" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
-CREATE TABLE "public"."PasswordResetToken" (
+CREATE TABLE "PasswordResetToken" (
     "id" TEXT NOT NULL,
     "tokenHash" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -101,7 +101,7 @@ CREATE TABLE "public"."PasswordResetToken" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."Course" (
+CREATE TABLE "Course" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
@@ -111,7 +111,7 @@ CREATE TABLE "public"."Course" (
     "level" TEXT NOT NULL,
     "estimatedMinutes" INTEGER,
     "language" TEXT NOT NULL DEFAULT 'vi',
-    "visibility" "public"."Visibility" NOT NULL DEFAULT 'PRIVATE',
+    "visibility" "Visibility" NOT NULL DEFAULT 'PRIVATE',
     "ownerId" TEXT NOT NULL,
     "currentPublishedVersionId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -122,11 +122,11 @@ CREATE TABLE "public"."Course" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."CourseVersion" (
+CREATE TABLE "CourseVersion" (
     "id" TEXT NOT NULL,
     "courseId" TEXT NOT NULL,
     "versionNumber" INTEGER NOT NULL,
-    "status" "public"."VersionStatus" NOT NULL DEFAULT 'DRAFT',
+    "status" "VersionStatus" NOT NULL DEFAULT 'DRAFT',
     "changeSummary" TEXT,
     "createdById" TEXT NOT NULL,
     "reviewedById" TEXT,
@@ -142,7 +142,7 @@ CREATE TABLE "public"."CourseVersion" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."Module" (
+CREATE TABLE "Module" (
     "id" TEXT NOT NULL,
     "versionId" TEXT NOT NULL,
     "stableId" TEXT NOT NULL,
@@ -158,7 +158,7 @@ CREATE TABLE "public"."Module" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."Lesson" (
+CREATE TABLE "Lesson" (
     "id" TEXT NOT NULL,
     "moduleId" TEXT NOT NULL,
     "stableId" TEXT NOT NULL,
@@ -175,10 +175,10 @@ CREATE TABLE "public"."Lesson" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."LessonBlock" (
+CREATE TABLE "LessonBlock" (
     "id" TEXT NOT NULL,
     "lessonId" TEXT NOT NULL,
-    "type" "public"."BlockType" NOT NULL,
+    "type" "BlockType" NOT NULL,
     "position" INTEGER NOT NULL,
     "contentJson" JSONB NOT NULL,
     "isLocked" BOOLEAN NOT NULL DEFAULT false,
@@ -193,11 +193,11 @@ CREATE TABLE "public"."LessonBlock" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."Review" (
+CREATE TABLE "Review" (
     "id" TEXT NOT NULL,
     "versionId" TEXT NOT NULL,
     "reviewerId" TEXT NOT NULL,
-    "decision" "public"."ReviewDecision" NOT NULL,
+    "decision" "ReviewDecision" NOT NULL,
     "comment" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -205,7 +205,7 @@ CREATE TABLE "public"."Review" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."Enrollment" (
+CREATE TABLE "Enrollment" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "courseId" TEXT NOT NULL,
@@ -216,7 +216,7 @@ CREATE TABLE "public"."Enrollment" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."LessonProgress" (
+CREATE TABLE "LessonProgress" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "lessonId" TEXT NOT NULL,
@@ -229,7 +229,7 @@ CREATE TABLE "public"."LessonProgress" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."Bookmark" (
+CREATE TABLE "Bookmark" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "lessonId" TEXT NOT NULL,
@@ -240,7 +240,7 @@ CREATE TABLE "public"."Bookmark" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."UserNote" (
+CREATE TABLE "UserNote" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "lessonId" TEXT NOT NULL,
@@ -253,7 +253,7 @@ CREATE TABLE "public"."UserNote" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."QuestionBank" (
+CREATE TABLE "QuestionBank" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL DEFAULT '',
@@ -262,7 +262,7 @@ CREATE TABLE "public"."QuestionBank" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."Topic" (
+CREATE TABLE "Topic" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
@@ -271,17 +271,17 @@ CREATE TABLE "public"."Topic" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."Question" (
+CREATE TABLE "Question" (
     "id" TEXT NOT NULL,
     "bankId" TEXT NOT NULL,
     "topicId" TEXT,
     "prompt" TEXT NOT NULL,
-    "type" "public"."QuestionType" NOT NULL,
+    "type" "QuestionType" NOT NULL,
     "difficulty" INTEGER NOT NULL DEFAULT 1,
     "explanation" TEXT,
     "referenceAnswer" TEXT,
     "rubricJson" JSONB,
-    "status" "public"."ContentStatus" NOT NULL DEFAULT 'DRAFT',
+    "status" "ContentStatus" NOT NULL DEFAULT 'DRAFT',
     "authorId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -290,7 +290,7 @@ CREATE TABLE "public"."Question" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."QuestionChoice" (
+CREATE TABLE "QuestionChoice" (
     "id" TEXT NOT NULL,
     "questionId" TEXT NOT NULL,
     "text" TEXT NOT NULL,
@@ -301,12 +301,12 @@ CREATE TABLE "public"."QuestionChoice" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."Assessment" (
+CREATE TABLE "Assessment" (
     "id" TEXT NOT NULL,
     "courseId" TEXT,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL DEFAULT '',
-    "type" "public"."AssessmentType" NOT NULL,
+    "type" "AssessmentType" NOT NULL,
     "timeLimitMinutes" INTEGER,
     "passScore" INTEGER NOT NULL DEFAULT 70,
     "randomizeQuestions" BOOLEAN NOT NULL DEFAULT false,
@@ -319,7 +319,7 @@ CREATE TABLE "public"."Assessment" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."AssessmentQuestion" (
+CREATE TABLE "AssessmentQuestion" (
     "assessmentId" TEXT NOT NULL,
     "questionId" TEXT NOT NULL,
     "position" INTEGER NOT NULL,
@@ -329,11 +329,11 @@ CREATE TABLE "public"."AssessmentQuestion" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."AssessmentAttempt" (
+CREATE TABLE "AssessmentAttempt" (
     "id" TEXT NOT NULL,
     "assessmentId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "status" "public"."AttemptStatus" NOT NULL DEFAULT 'IN_PROGRESS',
+    "status" "AttemptStatus" NOT NULL DEFAULT 'IN_PROGRESS',
     "score" DOUBLE PRECISION,
     "startedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "submittedAt" TIMESTAMP(3),
@@ -342,12 +342,12 @@ CREATE TABLE "public"."AssessmentAttempt" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."AttemptQuestionSnapshot" (
+CREATE TABLE "AttemptQuestionSnapshot" (
     "id" TEXT NOT NULL,
     "attemptId" TEXT NOT NULL,
     "questionId" TEXT NOT NULL,
     "prompt" TEXT NOT NULL,
-    "type" "public"."QuestionType" NOT NULL,
+    "type" "QuestionType" NOT NULL,
     "choicesJson" JSONB NOT NULL,
     "rubricJson" JSONB,
     "explanation" TEXT,
@@ -358,7 +358,7 @@ CREATE TABLE "public"."AttemptQuestionSnapshot" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."AttemptAnswer" (
+CREATE TABLE "AttemptAnswer" (
     "id" TEXT NOT NULL,
     "attemptId" TEXT NOT NULL,
     "snapshotId" TEXT NOT NULL,
@@ -371,7 +371,7 @@ CREATE TABLE "public"."AttemptAnswer" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."TopicProficiency" (
+CREATE TABLE "TopicProficiency" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "topicId" TEXT NOT NULL,
@@ -383,7 +383,7 @@ CREATE TABLE "public"."TopicProficiency" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."ReviewItem" (
+CREATE TABLE "ReviewItem" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "questionId" TEXT NOT NULL,
@@ -396,19 +396,19 @@ CREATE TABLE "public"."ReviewItem" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."Source" (
+CREATE TABLE "Source" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "author" TEXT,
     "publisher" TEXT,
-    "sourceType" "public"."SourceType" NOT NULL,
+    "sourceType" "SourceType" NOT NULL,
     "reliabilityLevel" INTEGER NOT NULL DEFAULT 3,
     "copyrightNote" TEXT,
     "originalFilename" TEXT NOT NULL,
     "mimeType" TEXT NOT NULL,
     "size" INTEGER NOT NULL,
     "storageKey" TEXT NOT NULL,
-    "processingStatus" "public"."ProcessingStatus" NOT NULL DEFAULT 'PENDING',
+    "processingStatus" "ProcessingStatus" NOT NULL DEFAULT 'PENDING',
     "uploadedById" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "archivedAt" TIMESTAMP(3),
@@ -417,7 +417,7 @@ CREATE TABLE "public"."Source" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."SourceChunk" (
+CREATE TABLE "SourceChunk" (
     "id" TEXT NOT NULL,
     "sourceId" TEXT NOT NULL,
     "position" INTEGER NOT NULL,
@@ -429,7 +429,7 @@ CREATE TABLE "public"."SourceChunk" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."BlockCitation" (
+CREATE TABLE "BlockCitation" (
     "blockId" TEXT NOT NULL,
     "chunkId" TEXT NOT NULL,
     "label" TEXT,
@@ -438,7 +438,7 @@ CREATE TABLE "public"."BlockCitation" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."QuestionCitation" (
+CREATE TABLE "QuestionCitation" (
     "questionId" TEXT NOT NULL,
     "chunkId" TEXT NOT NULL,
 
@@ -446,11 +446,11 @@ CREATE TABLE "public"."QuestionCitation" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."GenerationJob" (
+CREATE TABLE "GenerationJob" (
     "id" TEXT NOT NULL,
     "idempotencyKey" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "status" "public"."JobStatus" NOT NULL DEFAULT 'QUEUED',
+    "status" "JobStatus" NOT NULL DEFAULT 'QUEUED',
     "kind" TEXT NOT NULL,
     "userPrompt" TEXT NOT NULL,
     "settingsJson" JSONB NOT NULL,
@@ -471,7 +471,7 @@ CREATE TABLE "public"."GenerationJob" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."GenerationArtifact" (
+CREATE TABLE "GenerationArtifact" (
     "id" TEXT NOT NULL,
     "jobId" TEXT NOT NULL,
     "kind" TEXT NOT NULL,
@@ -482,7 +482,7 @@ CREATE TABLE "public"."GenerationArtifact" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."AuditLog" (
+CREATE TABLE "AuditLog" (
     "id" TEXT NOT NULL,
     "actorId" TEXT NOT NULL,
     "action" TEXT NOT NULL,
@@ -496,194 +496,194 @@ CREATE TABLE "public"."AuditLog" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "public"."User"("email");
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Account_provider_providerAccountId_key" ON "public"."Account"("provider", "providerAccountId");
+CREATE UNIQUE INDEX "Account_provider_providerAccountId_key" ON "Account"("provider", "providerAccountId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Session_sessionToken_key" ON "public"."Session"("sessionToken");
+CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "VerificationToken_token_key" ON "public"."VerificationToken"("token");
+CREATE UNIQUE INDEX "VerificationToken_token_key" ON "VerificationToken"("token");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "public"."VerificationToken"("identifier", "token");
+CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "PasswordResetToken_tokenHash_key" ON "public"."PasswordResetToken"("tokenHash");
+CREATE UNIQUE INDEX "PasswordResetToken_tokenHash_key" ON "PasswordResetToken"("tokenHash");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Course_slug_key" ON "public"."Course"("slug");
+CREATE UNIQUE INDEX "Course_slug_key" ON "Course"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Course_currentPublishedVersionId_key" ON "public"."Course"("currentPublishedVersionId");
+CREATE UNIQUE INDEX "Course_currentPublishedVersionId_key" ON "Course"("currentPublishedVersionId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "CourseVersion_courseId_versionNumber_key" ON "public"."CourseVersion"("courseId", "versionNumber");
+CREATE UNIQUE INDEX "CourseVersion_courseId_versionNumber_key" ON "CourseVersion"("courseId", "versionNumber");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Module_versionId_position_key" ON "public"."Module"("versionId", "position");
+CREATE UNIQUE INDEX "Module_versionId_position_key" ON "Module"("versionId", "position");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Lesson_moduleId_slug_key" ON "public"."Lesson"("moduleId", "slug");
+CREATE UNIQUE INDEX "Lesson_moduleId_slug_key" ON "Lesson"("moduleId", "slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Lesson_moduleId_position_key" ON "public"."Lesson"("moduleId", "position");
+CREATE UNIQUE INDEX "Lesson_moduleId_position_key" ON "Lesson"("moduleId", "position");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "LessonBlock_lessonId_position_key" ON "public"."LessonBlock"("lessonId", "position");
+CREATE UNIQUE INDEX "LessonBlock_lessonId_position_key" ON "LessonBlock"("lessonId", "position");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Enrollment_userId_courseId_key" ON "public"."Enrollment"("userId", "courseId");
+CREATE UNIQUE INDEX "Enrollment_userId_courseId_key" ON "Enrollment"("userId", "courseId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "LessonProgress_userId_lessonId_key" ON "public"."LessonProgress"("userId", "lessonId");
+CREATE UNIQUE INDEX "LessonProgress_userId_lessonId_key" ON "LessonProgress"("userId", "lessonId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Bookmark_userId_lessonId_blockId_key" ON "public"."Bookmark"("userId", "lessonId", "blockId");
+CREATE UNIQUE INDEX "Bookmark_userId_lessonId_blockId_key" ON "Bookmark"("userId", "lessonId", "blockId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Topic_slug_key" ON "public"."Topic"("slug");
+CREATE UNIQUE INDEX "Topic_slug_key" ON "Topic"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "QuestionChoice_questionId_position_key" ON "public"."QuestionChoice"("questionId", "position");
+CREATE UNIQUE INDEX "QuestionChoice_questionId_position_key" ON "QuestionChoice"("questionId", "position");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "AttemptAnswer_attemptId_snapshotId_key" ON "public"."AttemptAnswer"("attemptId", "snapshotId");
+CREATE UNIQUE INDEX "AttemptAnswer_attemptId_snapshotId_key" ON "AttemptAnswer"("attemptId", "snapshotId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "TopicProficiency_userId_topicId_key" ON "public"."TopicProficiency"("userId", "topicId");
+CREATE UNIQUE INDEX "TopicProficiency_userId_topicId_key" ON "TopicProficiency"("userId", "topicId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ReviewItem_userId_questionId_key" ON "public"."ReviewItem"("userId", "questionId");
+CREATE UNIQUE INDEX "ReviewItem_userId_questionId_key" ON "ReviewItem"("userId", "questionId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Source_storageKey_key" ON "public"."Source"("storageKey");
+CREATE UNIQUE INDEX "Source_storageKey_key" ON "Source"("storageKey");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "SourceChunk_sourceId_position_key" ON "public"."SourceChunk"("sourceId", "position");
+CREATE UNIQUE INDEX "SourceChunk_sourceId_position_key" ON "SourceChunk"("sourceId", "position");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "GenerationJob_idempotencyKey_key" ON "public"."GenerationJob"("idempotencyKey");
+CREATE UNIQUE INDEX "GenerationJob_idempotencyKey_key" ON "GenerationJob"("idempotencyKey");
 
 -- AddForeignKey
-ALTER TABLE "public"."Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PasswordResetToken" ADD CONSTRAINT "PasswordResetToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "PasswordResetToken" ADD CONSTRAINT "PasswordResetToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Course" ADD CONSTRAINT "Course_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Course" ADD CONSTRAINT "Course_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Course" ADD CONSTRAINT "Course_currentPublishedVersionId_fkey" FOREIGN KEY ("currentPublishedVersionId") REFERENCES "public"."CourseVersion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Course" ADD CONSTRAINT "Course_currentPublishedVersionId_fkey" FOREIGN KEY ("currentPublishedVersionId") REFERENCES "CourseVersion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."CourseVersion" ADD CONSTRAINT "CourseVersion_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "public"."Course"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "CourseVersion" ADD CONSTRAINT "CourseVersion_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."CourseVersion" ADD CONSTRAINT "CourseVersion_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "CourseVersion" ADD CONSTRAINT "CourseVersion_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Module" ADD CONSTRAINT "Module_versionId_fkey" FOREIGN KEY ("versionId") REFERENCES "public"."CourseVersion"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Module" ADD CONSTRAINT "Module_versionId_fkey" FOREIGN KEY ("versionId") REFERENCES "CourseVersion"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Lesson" ADD CONSTRAINT "Lesson_moduleId_fkey" FOREIGN KEY ("moduleId") REFERENCES "public"."Module"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_moduleId_fkey" FOREIGN KEY ("moduleId") REFERENCES "Module"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."LessonBlock" ADD CONSTRAINT "LessonBlock_lessonId_fkey" FOREIGN KEY ("lessonId") REFERENCES "public"."Lesson"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "LessonBlock" ADD CONSTRAINT "LessonBlock_lessonId_fkey" FOREIGN KEY ("lessonId") REFERENCES "Lesson"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Review" ADD CONSTRAINT "Review_versionId_fkey" FOREIGN KEY ("versionId") REFERENCES "public"."CourseVersion"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Review" ADD CONSTRAINT "Review_versionId_fkey" FOREIGN KEY ("versionId") REFERENCES "CourseVersion"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Enrollment" ADD CONSTRAINT "Enrollment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Enrollment" ADD CONSTRAINT "Enrollment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Enrollment" ADD CONSTRAINT "Enrollment_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "public"."Course"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Enrollment" ADD CONSTRAINT "Enrollment_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Enrollment" ADD CONSTRAINT "Enrollment_versionId_fkey" FOREIGN KEY ("versionId") REFERENCES "public"."CourseVersion"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Enrollment" ADD CONSTRAINT "Enrollment_versionId_fkey" FOREIGN KEY ("versionId") REFERENCES "CourseVersion"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."LessonProgress" ADD CONSTRAINT "LessonProgress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "LessonProgress" ADD CONSTRAINT "LessonProgress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."LessonProgress" ADD CONSTRAINT "LessonProgress_lessonId_fkey" FOREIGN KEY ("lessonId") REFERENCES "public"."Lesson"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "LessonProgress" ADD CONSTRAINT "LessonProgress_lessonId_fkey" FOREIGN KEY ("lessonId") REFERENCES "Lesson"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Bookmark" ADD CONSTRAINT "Bookmark_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Bookmark" ADD CONSTRAINT "Bookmark_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Bookmark" ADD CONSTRAINT "Bookmark_lessonId_fkey" FOREIGN KEY ("lessonId") REFERENCES "public"."Lesson"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Bookmark" ADD CONSTRAINT "Bookmark_lessonId_fkey" FOREIGN KEY ("lessonId") REFERENCES "Lesson"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."UserNote" ADD CONSTRAINT "UserNote_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "UserNote" ADD CONSTRAINT "UserNote_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."UserNote" ADD CONSTRAINT "UserNote_lessonId_fkey" FOREIGN KEY ("lessonId") REFERENCES "public"."Lesson"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "UserNote" ADD CONSTRAINT "UserNote_lessonId_fkey" FOREIGN KEY ("lessonId") REFERENCES "Lesson"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Question" ADD CONSTRAINT "Question_bankId_fkey" FOREIGN KEY ("bankId") REFERENCES "public"."QuestionBank"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Question" ADD CONSTRAINT "Question_bankId_fkey" FOREIGN KEY ("bankId") REFERENCES "QuestionBank"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Question" ADD CONSTRAINT "Question_topicId_fkey" FOREIGN KEY ("topicId") REFERENCES "public"."Topic"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Question" ADD CONSTRAINT "Question_topicId_fkey" FOREIGN KEY ("topicId") REFERENCES "Topic"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."QuestionChoice" ADD CONSTRAINT "QuestionChoice_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "public"."Question"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "QuestionChoice" ADD CONSTRAINT "QuestionChoice_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "Question"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Assessment" ADD CONSTRAINT "Assessment_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "public"."Course"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Assessment" ADD CONSTRAINT "Assessment_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."AssessmentQuestion" ADD CONSTRAINT "AssessmentQuestion_assessmentId_fkey" FOREIGN KEY ("assessmentId") REFERENCES "public"."Assessment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AssessmentQuestion" ADD CONSTRAINT "AssessmentQuestion_assessmentId_fkey" FOREIGN KEY ("assessmentId") REFERENCES "Assessment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."AssessmentQuestion" ADD CONSTRAINT "AssessmentQuestion_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "public"."Question"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "AssessmentQuestion" ADD CONSTRAINT "AssessmentQuestion_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "Question"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."AssessmentAttempt" ADD CONSTRAINT "AssessmentAttempt_assessmentId_fkey" FOREIGN KEY ("assessmentId") REFERENCES "public"."Assessment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "AssessmentAttempt" ADD CONSTRAINT "AssessmentAttempt_assessmentId_fkey" FOREIGN KEY ("assessmentId") REFERENCES "Assessment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."AssessmentAttempt" ADD CONSTRAINT "AssessmentAttempt_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AssessmentAttempt" ADD CONSTRAINT "AssessmentAttempt_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."AttemptQuestionSnapshot" ADD CONSTRAINT "AttemptQuestionSnapshot_attemptId_fkey" FOREIGN KEY ("attemptId") REFERENCES "public"."AssessmentAttempt"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AttemptQuestionSnapshot" ADD CONSTRAINT "AttemptQuestionSnapshot_attemptId_fkey" FOREIGN KEY ("attemptId") REFERENCES "AssessmentAttempt"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."AttemptAnswer" ADD CONSTRAINT "AttemptAnswer_attemptId_fkey" FOREIGN KEY ("attemptId") REFERENCES "public"."AssessmentAttempt"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AttemptAnswer" ADD CONSTRAINT "AttemptAnswer_attemptId_fkey" FOREIGN KEY ("attemptId") REFERENCES "AssessmentAttempt"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."TopicProficiency" ADD CONSTRAINT "TopicProficiency_topicId_fkey" FOREIGN KEY ("topicId") REFERENCES "public"."Topic"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "TopicProficiency" ADD CONSTRAINT "TopicProficiency_topicId_fkey" FOREIGN KEY ("topicId") REFERENCES "Topic"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Source" ADD CONSTRAINT "Source_uploadedById_fkey" FOREIGN KEY ("uploadedById") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Source" ADD CONSTRAINT "Source_uploadedById_fkey" FOREIGN KEY ("uploadedById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."SourceChunk" ADD CONSTRAINT "SourceChunk_sourceId_fkey" FOREIGN KEY ("sourceId") REFERENCES "public"."Source"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "SourceChunk" ADD CONSTRAINT "SourceChunk_sourceId_fkey" FOREIGN KEY ("sourceId") REFERENCES "Source"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."BlockCitation" ADD CONSTRAINT "BlockCitation_blockId_fkey" FOREIGN KEY ("blockId") REFERENCES "public"."LessonBlock"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "BlockCitation" ADD CONSTRAINT "BlockCitation_blockId_fkey" FOREIGN KEY ("blockId") REFERENCES "LessonBlock"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."BlockCitation" ADD CONSTRAINT "BlockCitation_chunkId_fkey" FOREIGN KEY ("chunkId") REFERENCES "public"."SourceChunk"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "BlockCitation" ADD CONSTRAINT "BlockCitation_chunkId_fkey" FOREIGN KEY ("chunkId") REFERENCES "SourceChunk"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."QuestionCitation" ADD CONSTRAINT "QuestionCitation_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "public"."Question"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "QuestionCitation" ADD CONSTRAINT "QuestionCitation_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "Question"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."QuestionCitation" ADD CONSTRAINT "QuestionCitation_chunkId_fkey" FOREIGN KEY ("chunkId") REFERENCES "public"."SourceChunk"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "QuestionCitation" ADD CONSTRAINT "QuestionCitation_chunkId_fkey" FOREIGN KEY ("chunkId") REFERENCES "SourceChunk"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."GenerationJob" ADD CONSTRAINT "GenerationJob_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "GenerationJob" ADD CONSTRAINT "GenerationJob_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."GenerationArtifact" ADD CONSTRAINT "GenerationArtifact_jobId_fkey" FOREIGN KEY ("jobId") REFERENCES "public"."GenerationJob"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "GenerationArtifact" ADD CONSTRAINT "GenerationArtifact_jobId_fkey" FOREIGN KEY ("jobId") REFERENCES "GenerationJob"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."AuditLog" ADD CONSTRAINT "AuditLog_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
