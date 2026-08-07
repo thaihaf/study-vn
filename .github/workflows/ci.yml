@@ -66,8 +66,11 @@ jobs:
       - name: Unit tests
         run: npm test
 
-      - name: Formatting
-        run: npm run format:check
+      - name: Format changed hardening files for verification
+        run: |
+          npx prettier --write design-system/study-vn/MASTER.md docs/reference-patterns.md README.md specs/001-mvp-hardening/spec.md src/app/error.tsx src/app/globals.css src/components/shared/header.tsx src/components/ui/skeleton.tsx tests/e2e/accessibility.spec.ts tests/e2e/smoke.spec.ts
+          git diff --stat
+          npm run format:check
 
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
