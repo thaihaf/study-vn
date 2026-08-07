@@ -2,6 +2,7 @@
 
 import { Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 import { db } from '@/lib/db';
@@ -244,6 +245,10 @@ function assessmentData(input: z.infer<typeof assessmentFormSchema>) {
   };
 }
 
+function assessmentPath(id: string, created = false) {
+  return `/admin/assessments?${created ? 'created' : 'focus'}=${encodeURIComponent(id)}`;
+}
+
 export async function createAssessment(form: FormData) {
   const user = await requirePermission('course:edit');
   const input = assessmentFormSchema.parse(Object.fromEntries(form));
@@ -259,6 +264,7 @@ export async function createAssessment(form: FormData) {
     },
   });
   revalidatePath('/admin/assessments');
+  redirect(assessmentPath(assessment.id, true));
 }
 
 export async function updateAssessment(form: FormData) {
@@ -279,6 +285,7 @@ export async function updateAssessment(form: FormData) {
     },
   });
   revalidatePath('/admin/assessments');
+  redirect(assessmentPath(input.assessmentId));
 }
 
 export async function addQuestionToAssessment(form: FormData) {
@@ -299,6 +306,7 @@ export async function addQuestionToAssessment(form: FormData) {
     create: { ...input, position },
   });
   revalidatePath('/admin/assessments');
+  redirect(assessmentPath(input.assessmentId));
 }
 
 export async function removeQuestionFromAssessment(form: FormData) {
@@ -329,6 +337,7 @@ export async function removeQuestionFromAssessment(form: FormData) {
     });
   }
   revalidatePath('/admin/assessments');
+  redirect(assessmentPath(input.assessmentId));
 }
 
 export async function moveAssessmentQuestion(form: FormData) {
@@ -350,7 +359,9 @@ export async function moveAssessmentQuestion(form: FormData) {
   });
   const index = rows.findIndex((row) => row.questionId === input.questionId);
   const targetIndex = input.direction === 'up' ? index - 1 : index + 1;
-  if (index < 0 || targetIndex < 0 || targetIndex >= rows.length) return;
+  if (index < 0 || targetIndex < 0 || targetIndex >= rows.length) {
+    redirect(assessmentPath(input.assessmentId));
+  }
   const next = [...rows];
   [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
   await db.assessmentQuestion.updateMany({
@@ -369,6 +380,7 @@ export async function moveAssessmentQuestion(form: FormData) {
     });
   }
   revalidatePath('/admin/assessments');
+  redirect(assessmentPath(input.assessmentId));
 }
 
 export async function toggleAssessmentPublished(form: FormData) {
@@ -399,4 +411,5 @@ export async function toggleAssessmentPublished(form: FormData) {
   revalidatePath('/practice');
   revalidatePath('/essays');
   revalidatePath('/interviews');
+  redirect(assessmentPath(id));
 }
