@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { db } from '@/lib/db';
+import { t } from '@/lib/i18n';
 
 export const metadata = { title: 'Khám phá' };
 
@@ -44,7 +45,7 @@ export default async function Explore() {
           </Link>
         ))}
         {!courses.length && (
-          <div className="card muted">Chưa có khóa học được xuất bản.</div>
+          <div className="card muted">{t('emptyCourses')}</div>
         )}
       </div>
     </div>

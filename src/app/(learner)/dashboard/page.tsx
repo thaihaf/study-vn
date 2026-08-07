@@ -63,6 +63,7 @@ export default async function Dashboard() {
       take: 5,
     }),
   ]);
+
   const reviewQuestions = reviewItems.length
     ? await db.question.findMany({
         where: { id: { in: reviewItems.map((item) => item.questionId) } },
@@ -108,10 +109,8 @@ export default async function Dashboard() {
           </Link>
         </div>
       </div>
-      <div
-        className="grid"
-        style={{ gridTemplateColumns: 'minmax(0,2fr) minmax(260px,1fr)' }}
-      >
+
+      <div className="dashboard-grid">
         <section>
           <h2>Đang học</h2>
           <div className="grid">
@@ -140,6 +139,7 @@ export default async function Dashboard() {
                     value={completed}
                     max={lessons.length || 1}
                     style={{ width: '100%' }}
+                    aria-label={`Tiến độ ${enrollment.course.title}`}
                   />
                   {next && (
                     <p>
@@ -163,6 +163,7 @@ export default async function Dashboard() {
               </div>
             )}
           </div>
+
           <h2>Ôn lại câu sai</h2>
           <div className="grid">
             {reviewItems.map((item) => (
@@ -184,6 +185,7 @@ export default async function Dashboard() {
             )}
           </div>
         </section>
+
         <aside className="grid" style={{ alignContent: 'start' }}>
           <div className="card">
             <h3>Mục tiêu mỗi ngày</h3>

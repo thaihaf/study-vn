@@ -12,7 +12,7 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     services:
       postgres:
         image: postgres:17
@@ -67,16 +67,16 @@ jobs:
         run: npm test
 
       - name: Formatting
-        run: |
-          npx prettier --write tests/e2e/smoke.spec.ts
-          git diff -- tests/e2e/smoke.spec.ts
-          npm run format:check
+        run: npm run format:check
 
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Playwright smoke suite
-        run: npm run test:e2e -- --project=chromium
+      - name: Playwright functional smoke suite
+        run: npm run test:e2e -- tests/e2e/smoke.spec.ts --project=chromium
 
-      - name: Production build
+      - name: Accessibility smoke suite
+        run: npm run test:a11y -- --project=chromium
+
+      - name: Production build without OpenAI key
         run: npm run build

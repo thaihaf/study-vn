@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:a11y": "playwright test tests/e2e/accessibility.spec.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:migrate": "prisma migrate deploy",
@@ -43,8 +44,10 @@
     "zod": "^4.0.14"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.11.3",
     "@eslint/eslintrc": "3.3.1",
     "@playwright/test": "1.54.2",
+    "@tailwindcss/postcss": "4.1.11",
     "@types/bcryptjs": "2.4.6",
     "@types/node": "22.17.0",
     "@types/pdf-parse": "1.1.5",
@@ -57,7 +60,6 @@
     "prettier-plugin-tailwindcss": "0.6.14",
     "prisma": "6.13.0",
     "tailwindcss": "4.1.11",
-    "@tailwindcss/postcss": "4.1.11",
     "tsx": "4.20.3",
     "typescript": "5.9.2",
     "vitest": "3.2.4"

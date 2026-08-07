@@ -1,21 +1,25 @@
 import Link from 'next/link';
-import { requireUser } from '@/modules/auth/session';
-import { isAdmin } from '@/modules/auth/permissions';
 import { notFound } from 'next/navigation';
-const links = [
-  ['/admin', 'Tổng quan'],
-  ['/admin/courses', 'Khóa học'],
-  ['/admin/generate', 'Tạo bằng AI'],
-  ['/admin/generation-jobs', 'AI jobs'],
-  ['/admin/sources', 'Nguồn'],
-  ['/admin/questions', 'Câu hỏi'],
-  ['/admin/assessments', 'Bài thi'],
-  ['/admin/interviews', 'Phỏng vấn'],
-  ['/admin/reviews', 'Duyệt'],
-  ['/admin/users', 'Người dùng'],
-  ['/admin/audit-logs', 'Nhật ký'],
-  ['/admin/settings', 'Cài đặt'],
+
+import { t, type MessageKey } from '@/lib/i18n';
+import { isAdmin } from '@/modules/auth/permissions';
+import { requireUser } from '@/modules/auth/session';
+
+const links: Array<[string, MessageKey]> = [
+  ['/admin', 'adminOverview'],
+  ['/admin/courses', 'adminCourses'],
+  ['/admin/generate', 'adminGenerate'],
+  ['/admin/generation-jobs', 'adminGenerationJobs'],
+  ['/admin/sources', 'adminSources'],
+  ['/admin/questions', 'adminQuestions'],
+  ['/admin/assessments', 'adminAssessments'],
+  ['/admin/interviews', 'adminInterviews'],
+  ['/admin/reviews', 'adminReviews'],
+  ['/admin/users', 'adminUsers'],
+  ['/admin/audit-logs', 'adminAuditLogs'],
+  ['/admin/settings', 'adminSettings'],
 ];
+
 export default async function AdminLayout({
   children,
 }: {
@@ -23,12 +27,13 @@ export default async function AdminLayout({
 }) {
   const user = await requireUser();
   if (!isAdmin(user.role)) notFound();
+
   return (
     <div className="admin-shell">
-      <nav className="sidebar" aria-label="Quản trị">
-        {links.map(([href, label]) => (
+      <nav className="sidebar" aria-label={t('adminNavigation')}>
+        {links.map(([href, key]) => (
           <Link key={href} href={href}>
-            {label}
+            {t(key)}
           </Link>
         ))}
       </nav>

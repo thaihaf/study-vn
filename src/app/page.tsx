@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { db } from '@/lib/db';
+import { t } from '@/lib/i18n';
 
 export default async function Home() {
   const courses = await db.course.findMany({
@@ -31,7 +32,7 @@ export default async function Home() {
               Khám phá khóa học
             </Link>
             <Link className="btn secondary" href="/register">
-              Tạo tài khoản
+              {t('register')}
             </Link>
           </div>
         </div>
@@ -56,7 +57,7 @@ export default async function Home() {
               </Link>
             ))
           ) : (
-            <div className="card muted">Chưa có khóa học được xuất bản.</div>
+            <div className="card muted">{t('emptyCourses')}</div>
           )}
         </div>
       </section>

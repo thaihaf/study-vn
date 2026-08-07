@@ -1,90 +1,139 @@
 # Lộ Trình Việt
 
-Nền tảng học tập tiếng Việt theo roadmap, gồm một ứng dụng Next.js modular-monolith cho người học và quản trị nội dung. Schema và nghiệp vụ hoàn toàn trung lập theo lĩnh vực.
+Nền tảng học tập tiếng Việt theo roadmap, gồm learner site và admin CMS trong một Next.js modular monolith. Schema/nghiệp vụ trung lập theo lĩnh vực; nội dung chuyên môn được admin tạo sau bằng tay, AI hoặc source-grounded generation.
 
-## Tính năng MVP
+## Baseline hiện tại
 
-- Auth.js session lưu PostgreSQL, credentials bcrypt, đăng ký/đăng nhập/reset adapter-ready và RBAC server-side cho 5 vai trò.
-- CMS Course → immutable CourseVersion → Module → Lesson → typed LessonBlock; draft, review, publish transaction, archive và restore-copy; validation, revision chống ghi đè và audit log.
-- Trang khám phá, ghi danh theo đúng published version, trình đọc responsive, tiến độ, ghi chú/đánh dấu riêng và dashboard.
-- Question bank, snapshot bất biến khi làm bài, giấu answer key, chấm câu khách quan, kết quả/ôn lỗi; mô hình rubric cho luận và phỏng vấn.
-- Upload TXT/Markdown có allowlist/kích thước/tên an toàn, chunk inspection và citation model. Schema mở rộng PDF/DOCX; production nên nối extractor cô lập (xem giới hạn).
-- `AIProvider` với fake deterministic và OpenAI Responses API Structured Outputs (`store: false`), model qua môi trường, job idempotent, retry metadata, lỗi tiếng Việt, schema Zod và giữ block đã khóa.
-- i18n dictionary tiếng Việt, light/dark theo hệ thống, focus/reduced-motion, security headers, health/readiness và structured logging.
+- Next.js App Router + React + TypeScript strict + Tailwind CSS.
+- PostgreSQL + Prisma; migration có thể chạy từ database sạch bằng `prisma migrate deploy`.
+- Auth.js Credentials + Prisma adapter. **Session hiện dùng JWT strategy** vì Credentials flow trên Auth.js v5 beta không tương thích với database-session strategy đã thử trước đó. JWT chỉ mang `id`, `role`, `canPublish`; mọi authorization quan trọng vẫn được kiểm tra server-side.
+- 5 vai trò: `SUPER_ADMIN`, `CONTENT_ADMIN`, `REVIEWER`, `INSTRUCTOR`, `LEARNER`.
+- CMS Course → immutable CourseVersion → Module → Lesson → typed LessonBlock; draft/review/publish/archive/restore, builder, validation, revision protection và audit log.
+- Learner: explore, enroll, lesson reader, progress, note/bookmark, question bank, quiz/mock exam, attempt snapshot, incorrect-review queue, essay và text interview practice.
+- Sources: TXT/Markdown/PDF/DOCX extraction path, chunking/retrieval/citation model và source authorization.
+- AI: `AIProvider` abstraction với fake deterministic provider cho test và OpenAI Responses/Structured Outputs cho production; output Zod-validated, job metadata/idempotency và locked-block protection.
+- Light/dark, semantic design tokens, reduced motion, responsive reader/admin/builder và Vietnamese-first lightweight i18n.
+
+## Spec-driven development
+
+Repository dùng artifact theo tinh thần [GitHub Spec Kit](https://github.com/github/spec-kit):
+
+```text
+.specify/memory/constitution.md
+specs/<feature>/spec.md
+specs/<feature>/plan.md
+specs/<feature>/tasks.md
+specs/<feature>/research.md
+specs/<feature>/quickstart.md
+```
+
+`AGENTS.md` giữ vai trò build contract/phạm vi sản phẩm gốc. Constitution chứa invariant ổn định; từng feature spec ghi requirement/acceptance criteria; plan ghi HOW; tasks map implementation với requirement. Khi implementation phải khác contract cũ, deviation được ghi rõ trong spec/plan thay vì để documentation drift.
+
+Feature baseline hiện tại: `specs/001-mvp-hardening/`.
+
+## Design system
+
+Visual source of truth nằm ở:
+
+```text
+design-system/study-vn/MASTER.md
+design-system/study-vn/pages/
+```
+
+Pattern Master + page override tham khảo UI/UX Pro Max nhưng được điều chỉnh cho product này: **Accessible Soft Minimal**, ưu tiên long-session readability, accessibility, touch interaction, responsive và performance trước decoration. Learner surface ít motion/density thấp; admin/course builder density cao hơn nhưng vẫn dùng cùng semantic tokens.
+
+Các reference repo và adoption policy được ghi tại `docs/reference-patterns.md`. Không copy branding/pixel layout của sản phẩm khác.
 
 ## Chạy local từ đầu
 
-Yêu cầu Node.js 20+, pnpm 10+, Docker.
+Yêu cầu Node.js 20+, npm hoặc pnpm và Docker.
 
 ```bash
 cp .env.example .env
-# Thay AUTH_SECRET, SEED_ADMIN_EMAIL và SEED_ADMIN_PASSWORD trong .env
-pnpm install
+# Điền AUTH_SECRET, SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD
+npm install
 docker compose up -d
-pnpm db:migrate
-pnpm db:seed
-pnpm dev
+npm run db:migrate
+npm run db:seed
+npm run dev
 ```
 
-Mở <http://localhost:3000>. Health endpoint: `GET /api/health`.
+Mở `http://localhost:3000`. Health endpoint: `GET /api/health`.
+
+Project vẫn khai báo `pnpm@10.14.0`; các script tương đương có thể chạy bằng `pnpm`. GitHub CI hiện dùng npm để phù hợp lockfile/browser CI hiện tại.
 
 ### Seed admin
 
-`pnpm db:seed` idempotent, chỉ tạo/cập nhật super admin từ `SEED_ADMIN_EMAIL` và `SEED_ADMIN_PASSWORD` (tối thiểu 12 ký tự). Script từ chối thiếu/mật khẩu yếu; không có credential mặc định. `SEED_LEARNER_*` chỉ được dùng ngoài production.
+`npm run db:seed` idempotent, tạo/cập nhật super admin từ `SEED_ADMIN_EMAIL` và `SEED_ADMIN_PASSWORD` (tối thiểu 12 ký tự). Không có production credential mặc định. `SEED_LEARNER_*` chỉ dành cho local/CI fixture.
 
 ## Biến môi trường
 
-| Biến                                      |    Bắt buộc | Ý nghĩa                                             |
-| ----------------------------------------- | ----------: | --------------------------------------------------- |
-| `DATABASE_URL`                            |          Có | PostgreSQL connection URL                           |
-| `AUTH_SECRET`                             |          Có | Bí mật ký session, ngẫu nhiên >= 32 byte            |
-| `AUTH_TRUST_HOST`                         |  Prod/proxy | Cho Auth.js tin cậy host do proxy cung cấp          |
-| `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` |    Khi seed | Super admin ban đầu                                 |
-| `OPENAI_API_KEY`                          |       Không | Thiếu biến này, CMS thủ công vẫn dùng được          |
-| `OPENAI_MODEL`                            | Khi dùng AI | Model hỗ trợ Responses + Structured Outputs         |
-| `AI_PROVIDER`                             |       Không | `openai` (mặc định) hoặc `fake` trong test          |
-| `UPLOAD_DIR`, `MAX_UPLOAD_BYTES`          |       Không | Storage private và giới hạn upload (5 MiB mặc định) |
+| Biến | Bắt buộc | Ý nghĩa |
+| --- | ---: | --- |
+| `DATABASE_URL` | Có | PostgreSQL connection URL |
+| `AUTH_SECRET` | Có | Secret ký session, production dùng giá trị ngẫu nhiên mạnh |
+| `AUTH_TRUST_HOST` | Prod/proxy | Cho Auth.js tin cậy host do proxy cung cấp |
+| `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | Khi seed | Super admin ban đầu |
+| `SEED_LEARNER_EMAIL`, `SEED_LEARNER_PASSWORD` | Local/CI | Learner fixture tùy chọn |
+| `OPENAI_API_KEY` | Không | Thiếu key, manual CMS vẫn hoạt động |
+| `OPENAI_MODEL` | Khi dùng OpenAI | Model hỗ trợ Responses + Structured Outputs |
+| `AI_PROVIDER` | Không | `openai` hoặc `fake`; CI dùng `fake` |
+| `UPLOAD_DIR`, `MAX_UPLOAD_BYTES` | Không | Private upload storage và giới hạn file |
 
-## Kiến trúc
+## Data-access boundary
 
-- `src/app`: App Router, route group public/auth/learner và admin; mutation dùng Server Actions nhất quán.
-- `src/modules`: auth, content, assessment, progress, source retrieval, publishing và AI domain services. UI không quyết định authorization.
-- `prisma`: schema, migration ban đầu và seed. Published version không được sửa; restore deep-copy thành draft mới.
-- `tests`: Vitest domain/service và Playwright smoke desktop/mobile. Real OpenAI không bao giờ được test gọi.
+- Client Component không được truy cập Prisma, secret hoặc server authorization logic.
+- Server Component **có thể** gọi Prisma cho page-local, read-only query đơn giản.
+- Query tái sử dụng/phức tạp/có policy và mọi mutation/business invariant phải nằm dưới `src/modules` qua service/server action/route handler phù hợp.
+- Quy tắc này tránh cả hai cực: nhét business logic vào page hoặc tạo service wrapper hình thức cho mọi `findMany`.
 
-## Kiểm tra
+## Authentication / authorization
+
+Credentials login dùng JWT session; Prisma adapter vẫn quản lý user/account data. Server-side RBAC là source of truth. UI visibility chỉ là trải nghiệm, không phải authorization.
+
+Nếu sau này chuyển lại database-backed session, thay đổi đó cần feature spec riêng và E2E chứng minh login/session refresh/logout/role enforcement không regression.
+
+## Kiểm tra trước merge
 
 ```bash
-pnpm format:check
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm test:e2e
-pnpm build
+npm run typecheck
+npm run lint
+npm test
+npm run format:check
+npx playwright install chromium
+npm run test:e2e -- --project=chromium
+npm run build
 ```
 
-E2E cần PostgreSQL đã migrate. Có thể đặt `AI_PROVIDER=fake`; không cần OpenAI key.
+CI còn chạy:
 
-## Triển khai vendor-neutral
+- PostgreSQL 17 sạch → toàn bộ migration → deterministic seed;
+- functional Playwright smoke;
+- `@axe-core/playwright` accessibility smoke trên public/auth/admin/learner core surfaces;
+- production build với `AI_PROVIDER=fake`, không cần OpenAI key.
 
-1. Build image/application với Node 20, `pnpm install --frozen-lockfile && pnpm build`.
-2. Cấp PostgreSQL managed, HTTPS reverse proxy, persistent private object volume/storage và các secrets ở trên.
-3. Chạy `pnpm db:migrate` như release job duy nhất, sau đó `pnpm start`; kiểm tra `/api/health` trước khi nhận traffic.
-4. Tách quyền DB migration/runtime, giới hạn egress, rotate secrets, theo dõi structured logs và alert job `FAILED`.
+Trong thời gian Vercel preview bị build-rate-limit, GitHub Actions là code-level verification chính; không bỏ quality gate và không spam redeploy chỉ để lấy preview status.
 
-### Backup, restore và rollback
+## Deployment
 
-- Lịch `pg_dump -Fc "$DATABASE_URL" > backup.dump`, mã hóa và kiểm tra restore định kỳ bằng `pg_restore --clean --if-exists` vào DB tạm.
-- Backup storage nguồn cùng thời điểm với DB. Nguồn archived vẫn phải tồn tại để citation bản published hợp lệ.
-- Rollback ứng dụng về artifact trước; migration schema phải forward-compatible. Khi buộc phục hồi dữ liệu, dừng ghi, snapshot DB hiện tại, restore backup đã kiểm chứng rồi chạy health/smoke.
+Kiến trúc vendor-neutral. Một production release nên:
 
-## Giới hạn không критич (MVP)
+1. cài dependency + build artifact;
+2. chạy `npm run db:migrate` bằng migration connection có quyền phù hợp;
+3. start app bằng runtime DB connection;
+4. kiểm tra `/api/health` trước khi nhận traffic.
 
-- UI builder hiện tập trung vào luồng block văn bản đầu-cuối; schema/service đã hỗ trợ toàn bộ block và dnd-kit/TipTap đã được pin để nâng editor nhiều block mà không đổi dữ liệu.
-- TXT/Markdown được trích xuất trực tiếp. PDF/DOCX đã có allowlist/schema nhưng cần worker extractor sandboxed trước khi bật trên UI production.
-- Reset mật khẩu local phát token trong structured server log; production cần email transactional và trang consume-token theo nhà cung cấp email.
-- Full-text retrieval interface đã tách; tìm kiếm vector, object storage cloud, worker queue và email là các nâng cấp hậu MVP.
+Vercel + Supabase là một deployment hiện tại, không phải ràng buộc kiến trúc. Với Supabase pooler, runtime và migration connection có thể dùng endpoint/port khác nhau; secrets nằm trong environment, không commit.
 
-## Nâng cấp đề xuất
+**Không chạy `prisma db push` trong Vercel build/runtime production.**
 
-Editor TipTap/dnd-kit đa block hoàn chỉnh; PostgreSQL FTS ranking; extractor PDF/DOCX cô lập; S3-compatible storage; transactional email; background worker; test E2E đầy đủ theo vai trò với database fixture; CSP nonce thay cho inline development allowances; metrics/tracing OpenTelemetry.
+## Backup / restore / rollback
+
+- Backup PostgreSQL định kỳ bằng `pg_dump -Fc`, mã hóa và test restore vào database tạm.
+- Backup private source storage cùng thời điểm với DB để citation của published content vẫn hợp lệ.
+- Rollback app về artifact trước khi can thiệp dữ liệu; migration nên forward-compatible.
+- Khi bắt buộc data restore: dừng ghi, snapshot trạng thái hiện tại, restore backup đã kiểm chứng rồi chạy health + smoke suite.
+
+## Reference và hướng mở rộng
+
+Sau MVP có thể bổ sung object storage S3-compatible, transactional email, background worker, vector retrieval và OpenTelemetry. Các nâng cấp này không được đưa vào chỉ vì “có thể cần”; chúng cần requirement/acceptance criteria cụ thể theo workflow trong `specs/`.
