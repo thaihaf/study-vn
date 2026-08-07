@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation';
 
+import { ActionRedirectForm } from '@/components/shared/action-redirect-form';
+import { ServerActionButton } from '@/components/shared/server-action-button';
 import { db } from '@/lib/db';
 import { startAssessment } from '@/modules/assessments/learner-actions';
 import { requireUser } from '@/modules/auth/session';
@@ -41,10 +43,12 @@ export default async function Page({
           yêu cầu phản hồi AI cho từng câu cần góp ý.
         </p>
       </div>
-      <form action={startAssessment}>
+      <ActionRedirectForm action={startAssessment}>
         <input type="hidden" name="assessmentId" value={row.id} />
-        <button className="btn">Bắt đầu phiên luyện</button>
-      </form>
+        <ServerActionButton className="btn" pendingLabel="Đang bắt đầu...">
+          Bắt đầu phiên luyện
+        </ServerActionButton>
+      </ActionRedirectForm>
       {previous.length > 0 && (
         <section>
           <h2>Lần luyện gần đây</h2>
