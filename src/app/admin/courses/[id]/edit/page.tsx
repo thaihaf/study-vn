@@ -14,11 +14,14 @@ import { validateVersion } from '@/modules/publishing/service';
 
 export default async function Editor({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ published?: string }>;
 }) {
   const user = await requirePermission('course:read');
   const { id } = await params;
+  const query = await searchParams;
   const course = await db.course.findUnique({
     where: { id },
     include: {
@@ -46,6 +49,12 @@ export default async function Editor({
 
   return (
     <>
+      {query.published === '1' && (
+        <div className="card" role="status">
+          ✓ PUBLISHED · Phiên bản đã được xuất bản cho người học.
+        </div>
+      )}
+
       <div className="builder-page-heading">
         <div>
           <span className="status">
