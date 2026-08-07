@@ -1,6 +1,17 @@
 import Link from 'next/link';
 
-export default function Home() {
+import { db } from '@/lib/db';
+
+export default async function Home() {
+  const courses = await db.course.findMany({
+    where: {
+      visibility: 'PUBLIC',
+      currentPublishedVersionId: { not: null },
+    },
+    take: 3,
+    orderBy: { updatedAt: 'desc' },
+  });
+
   return (
     <>
       <section className="hero">
@@ -32,10 +43,23 @@ export default function Home() {
           className="grid"
           style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))' }}
         >
-          <div className="card muted">
-            Giao diện đã sẵn sàng. Khóa học sẽ xuất hiện sau khi kết nối cơ sở
-            dữ liệu.
-          </div>
+          {courses.length ? (
+            courses.map((course) => (
+              <Link
+                className="card"
+                href={`/courses/${course.slug}`}
+                key={course.id}
+              >
+                <span className="status">{course.level}</span>
+                <h3>{course.title}</h3>
+                <p className="muted">{course.shortDescription}</p>
+              </Link>
+            ))
+          ) : (
+            <div className="card muted">
+              Chưa có khóa học được xuất bản.
+            </div>
+          )}
         </div>
       </section>
 
