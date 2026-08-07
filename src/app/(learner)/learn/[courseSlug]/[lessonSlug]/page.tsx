@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { lessonInteraction } from '@/app/actions';
 import { LessonBlockView } from '@/components/content/lesson-block';
+import { ServerActionButton } from '@/components/shared/server-action-button';
 import { db } from '@/lib/db';
 import { requireUser } from '@/modules/auth/session';
+import { lessonInteractionRedirect } from '@/modules/learning/actions';
 
 export default async function Learn({
   params,
@@ -65,6 +66,7 @@ export default async function Learn({
   const lesson = lessons.find((item) => item.slug === lessonSlug);
   if (!lesson) return notFound();
   const lessonIndex = lessons.findIndex((item) => item.id === lesson.id);
+  const returnTo = `/learn/${course.slug}/${lesson.slug}`;
 
   const [progress, note, bookmark] = await Promise.all([
     db.lessonProgress.findUnique({
@@ -142,17 +144,21 @@ export default async function Learn({
           ) : (
             <span />
           )}
-          <form action={lessonInteraction}>
+          <form action={lessonInteractionRedirect}>
             <input type="hidden" name="lessonId" value={lesson.id} />
             <input
               type="hidden"
               name="versionId"
               value={course.currentPublishedVersion.id}
             />
+            <input type="hidden" name="returnTo" value={returnTo} />
             <input type="hidden" name="intent" value="complete" />
-            <button className={progress?.completedAt ? 'btn secondary' : 'btn'}>
+            <ServerActionButton
+              className={progress?.completedAt ? 'btn secondary' : 'btn'}
+              pendingLabel="Đang lưu tiến độ..."
+            >
               {progress?.completedAt ? '✓ Đã hoàn thành' : 'Hoàn thành bài'}
-            </button>
+            </ServerActionButton>
           </form>
           {lessons[lessonIndex + 1] ? (
             <Link
@@ -179,13 +185,14 @@ export default async function Learn({
             </small>
           )}
         </section>
-        <form className="card grid" action={lessonInteraction}>
+        <form className="card grid" action={lessonInteractionRedirect}>
           <input type="hidden" name="lessonId" value={lesson.id} />
           <input
             type="hidden"
             name="versionId"
             value={course.currentPublishedVersion.id}
           />
+          <input type="hidden" name="returnTo" value={returnTo} />
           <input type="hidden" name="intent" value="note" />
           <label className="label">
             Ghi chú riêng
@@ -197,19 +204,29 @@ export default async function Learn({
               required
             />
           </label>
-          <button className="btn secondary">Lưu ghi chú</button>
+          <ServerActionButton
+            className="btn secondary"
+            pendingLabel="Đang lưu ghi chú..."
+          >
+            Lưu ghi chú
+          </ServerActionButton>
         </form>
-        <form action={lessonInteraction}>
+        <form action={lessonInteractionRedirect}>
           <input type="hidden" name="lessonId" value={lesson.id} />
           <input
             type="hidden"
             name="versionId"
             value={course.currentPublishedVersion.id}
           />
+          <input type="hidden" name="returnTo" value={returnTo} />
           <input type="hidden" name="intent" value="bookmark" />
-          <button className="btn secondary" style={{ width: '100%' }}>
+          <ServerActionButton
+            className="btn secondary"
+            style={{ width: '100%' }}
+            pendingLabel="Đang cập nhật..."
+          >
             {bookmark ? '★ Bỏ đánh dấu' : '☆ Đánh dấu'}
-          </button>
+          </ServerActionButton>
         </form>
         <nav className="card grid" aria-label="Công cụ học tập">
           <b>Công cụ</b>
