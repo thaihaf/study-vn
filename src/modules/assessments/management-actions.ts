@@ -260,7 +260,7 @@ export async function createAssessment(form: FormData) {
     },
   });
   revalidatePath('/admin/assessments');
-  redirect('/admin/assessments');
+  redirect(`/admin/assessments?created=${assessment.id}`);
 }
 
 export async function updateAssessment(form: FormData) {
