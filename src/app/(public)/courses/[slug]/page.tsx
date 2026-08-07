@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { auth } from '@/auth';
+import { ActionRedirectForm } from '@/components/shared/action-redirect-form';
 import { ServerActionButton } from '@/components/shared/server-action-button';
 import { db } from '@/lib/db';
 import { enrollCourse } from '@/modules/learning/actions';
@@ -88,12 +89,12 @@ export default async function CoursePage({
           </p>
         </div>
       ) : session ? (
-        <form action={enrollCourse}>
+        <ActionRedirectForm action={enrollCourse}>
           <input type="hidden" name="courseId" value={course.id} />
           <ServerActionButton className="btn" pendingLabel="Đang ghi danh...">
             Bắt đầu học
           </ServerActionButton>
-        </form>
+        </ActionRedirectForm>
       ) : (
         <Link className="btn" href="/login">
           Đăng nhập để học
