@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { generateLessonDraft } from '@/modules/ai/lesson-actions';
+import { generateRateLimitedLessonDraft } from '@/modules/ai/rate-limited-actions';
 
 export async function LessonGenerationPanel() {
   const [draftVersions, sources] = await Promise.all([
@@ -38,7 +38,7 @@ export async function LessonGenerationPanel() {
       </summary>
       <form
         className="grid"
-        action={generateLessonDraft}
+        action={generateRateLimitedLessonDraft}
         style={{ marginTop: '1rem' }}
       >
         <label className="label">
