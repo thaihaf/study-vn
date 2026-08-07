@@ -53,7 +53,10 @@ export default async function ResetPassword({
           />
         </label>
         <p className="muted">Tối thiểu 12 ký tự.</p>
-        <SubmitButton idleLabel="Đổi mật khẩu" pendingLabel="Đang đổi mật khẩu…" />
+        <SubmitButton
+          idleLabel="Đổi mật khẩu"
+          pendingLabel="Đang đổi mật khẩu…"
+        />
       </form>
     </div>
   );
