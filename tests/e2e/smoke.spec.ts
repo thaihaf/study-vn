@@ -54,7 +54,6 @@ test('admin publishes content and learner completes the core journey', async ({
   await expect(page).toHaveURL(/\/admin\/courses\/.+\/edit/);
   await expect(page.getByText('Không có lỗi chặn xuất bản.')).toBeVisible();
 
-  page.once('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: 'Xuất bản ngay' }).click();
   await expect(page.getByText(/PUBLISHED/).first()).toBeVisible();
 
@@ -102,7 +101,6 @@ test('admin publishes content and learner completes the core journey', async ({
     assessmentCard.locator('ol > li').filter({ hasText: questionPrompt }),
   ).toBeVisible();
 
-  page.once('dialog', (dialog) => dialog.accept());
   await assessmentCard.getByRole('button', { name: 'Xuất bản' }).click();
   await expect(
     assessmentCard.getByRole('button', { name: 'Gỡ xuất bản' }),
