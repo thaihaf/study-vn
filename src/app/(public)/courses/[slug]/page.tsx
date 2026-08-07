@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { enroll } from '@/app/actions';
 import { auth } from '@/auth';
+import { ServerActionButton } from '@/components/shared/server-action-button';
 import { db } from '@/lib/db';
+import { enrollCourse } from '@/modules/learning/actions';
 import { calculateProgress } from '@/modules/progress/progress';
 
 export default async function CoursePage({
@@ -87,9 +88,11 @@ export default async function CoursePage({
           </p>
         </div>
       ) : session ? (
-        <form action={enroll}>
+        <form action={enrollCourse}>
           <input type="hidden" name="courseId" value={course.id} />
-          <button className="btn">Bắt đầu học</button>
+          <ServerActionButton className="btn" pendingLabel="Đang ghi danh...">
+            Bắt đầu học
+          </ServerActionButton>
         </form>
       ) : (
         <Link className="btn" href="/login">
