@@ -18,5 +18,5 @@ export async function publishCourseVersion(form: FormData) {
   revalidatePath('/explore');
   revalidatePath('/');
 
-  redirect(`/admin/courses/${published.courseId}/edit`);
+  redirect(`/admin/courses/${published.courseId}/edit?published=1`);
 }
