@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { publish, restore, submitReview } from '@/app/actions';
+import { restore, submitReview } from '@/app/actions';
 import { CourseBuilder } from '@/components/admin/course-builder';
 import { ConfirmButton } from '@/components/shared/confirm-button';
 import { db } from '@/lib/db';
@@ -9,6 +9,7 @@ import { can } from '@/modules/auth/permissions';
 import { requirePermission } from '@/modules/auth/session';
 import { archiveCourse } from '@/modules/courses/actions';
 import { getCourseBuilderState } from '@/modules/courses/builder';
+import { publishCourseVersion } from '@/modules/publishing/actions';
 import { validateVersion } from '@/modules/publishing/service';
 
 export default async function Editor({
@@ -122,7 +123,7 @@ export default async function Editor({
             {can(user.role, 'course:publish', user.canPublish) &&
               !validation.errors.length &&
               !course.archivedAt && (
-                <form action={publish}>
+                <form action={publishCourseVersion}>
                   <input
                     type="hidden"
                     name="versionId"
