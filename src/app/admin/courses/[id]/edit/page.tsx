@@ -138,12 +138,12 @@ export default async function Editor({
                     name="versionId"
                     value={draft.versionId}
                   />
-                  <ConfirmButton
-                    className="btn"
-                    message="Xuất bản bản nháp này cho người học? Phiên bản công khai hiện tại sẽ được lưu trữ."
-                  >
+                  <button className="btn" type="submit">
                     Xuất bản ngay
-                  </ConfirmButton>
+                  </button>
+                  <small className="muted">
+                    Phiên bản công khai hiện tại sẽ được lưu trữ.
+                  </small>
                 </form>
               )}
           </div>
