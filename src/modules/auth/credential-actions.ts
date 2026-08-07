@@ -28,9 +28,15 @@ export async function register(form: FormData) {
     .extend({ name: z.string().min(2).max(100) })
     .parse(Object.fromEntries(form));
   const email = input.email.toLowerCase();
-  assertRateLimit('register', email, { limit: 3, windowMs: 60 * 60 * 1000 });
+  assertRateLimit('register', email, {
+    limit: 3,
+    windowMs: 60 * 60 * 1000,
+  });
 
-  const exists = await db.user.findUnique({ where: { email }, select: { id: true } });
+  const exists = await db.user.findUnique({
+    where: { email },
+    select: { id: true },
+  });
   if (exists) throw new Error('EMAIL_ALREADY_REGISTERED');
 
   await db.user.create({
