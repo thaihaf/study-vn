@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { login } from '@/app/actions';
+import { login } from '@/modules/auth/credential-actions';
 
 import { LoginSubmitButton } from './login-submit-button';
 
@@ -25,7 +25,7 @@ export default function Login() {
             className="input"
             name="password"
             type="password"
-            minLength={8}
+            minLength={12}
             required
             autoComplete="current-password"
           />
