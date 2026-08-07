@@ -7,12 +7,12 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     services:
       postgres:
         image: postgres:17
@@ -37,95 +37,94 @@ jobs:
       SEED_LEARNER_EMAIL: seeded-learner@ci.example.test
       SEED_LEARNER_PASSWORD: LearnerPassword123!
     steps:
-      - name: Check out repository
+      - name: Check out repository branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Install dependencies
+      - name: Install dependencies and refresh npm lockfile
         run: npm install
 
-      - name: Normalize hardening fixes in CI workspace
+      - name: Refresh pnpm lockfile
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         shell: bash
         run: |
-          python - <<'PY'
-          from pathlib import Path
+          corepack enable
+          corepack prepare pnpm@10.14.0 --activate
+          pnpm install --lockfile-only --no-frozen-lockfile
 
-          assessment = Path('src/modules/assessments/management-actions.ts')
-          text = assessment.read_text()
-          marker = "const assessmentFormSchema = z.object({"
-          helper = """const optionalPositiveInt = z.preprocess(\n  (value) =>\n    value === '' || value === null || value === undefined ? undefined : value,\n  z.coerce.number().int().positive().optional(),\n);\n\n"""
-          if 'const optionalPositiveInt = z.preprocess(' not in text:
-              text = text.replace(marker, helper + marker, 1)
-          text = text.replace(
-              "timeLimitMinutes: z.coerce.number().int().positive().optional(),",
-              "timeLimitMinutes: optionalPositiveInt,",
-          )
-          text = text.replace(
-              "maximumAttempts: z.coerce.number().int().positive().optional(),",
-              "maximumAttempts: optionalPositiveInt,",
-          )
-          assessment.write_text(text)
-
-          smoke = Path('tests/e2e/smoke.spec.ts')
-          text = smoke.read_text()
-          text = text.replace(
-              "await expect(page).toHaveURL(/\\/admin\\/courses\\/.+\\/edit/);",
-              "await expect(page).toHaveURL(/\\/admin\\/courses\\/.+\\/edit/, { timeout: 15_000 });",
-          )
-          text = text.replace(
-              "await expect(page.getByText('Không có lỗi chặn xuất bản.')).toBeVisible();",
-              "await expect(page.getByText('Không có lỗi chặn xuất bản.')).toBeVisible({ timeout: 15_000 });",
-          )
-          needle = """  const assessmentCard = page\n    .locator('article.card')\n    .filter({ hasText: assessmentTitle });\n  await assessmentCard\n"""
-          replacement = """  const assessmentCard = page\n    .locator('article.card')\n    .filter({ hasText: assessmentTitle });\n  await expect(assessmentCard).toBeVisible({ timeout: 15_000 });\n  await assessmentCard\n"""
-          text = text.replace(needle, replacement)
-          smoke.write_text(text)
-          PY
-
+      - name: Normalize hardening files once
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        shell: bash
+        run: |
           npx prettier --write \
-            design-system/study-vn/MASTER.md \
+            .specify/memory/constitution.md \
+            design-system/study-vn \
             docs/reference-patterns.md \
             README.md \
-            specs/001-mvp-hardening/spec.md \
+            TASKS.md \
+            specs/001-mvp-hardening \
             src/app/error.tsx \
             src/app/globals.css \
+            src/app/loading.tsx \
+            src/app/mvp.css \
+            src/app/not-found.tsx \
+            src/app/page.tsx \
+            'src/app/(auth)/login/login-submit-button.tsx' \
+            'src/app/(auth)/login/page.tsx' \
+            'src/app/(learner)/dashboard/page.tsx' \
+            'src/app/(public)/explore/page.tsx' \
+            src/app/admin/layout.tsx \
             src/components/shared/header.tsx \
-            src/components/ui/skeleton.tsx \
+            src/components/ui \
+            src/lib/i18n.ts \
             src/modules/assessments/management-actions.ts \
+            playwright.config.ts \
             tests/e2e/accessibility.spec.ts \
             tests/e2e/smoke.spec.ts
 
-          rm -rf hardening-artifact
-          mkdir -p hardening-artifact
-          cp --parents \
+          git add \
             package-lock.json \
-            design-system/study-vn/MASTER.md \
+            pnpm-lock.yaml \
+            .specify/memory/constitution.md \
+            design-system/study-vn \
             docs/reference-patterns.md \
             README.md \
-            specs/001-mvp-hardening/spec.md \
+            TASKS.md \
+            specs/001-mvp-hardening \
             src/app/error.tsx \
             src/app/globals.css \
+            src/app/loading.tsx \
+            src/app/mvp.css \
+            src/app/not-found.tsx \
+            src/app/page.tsx \
+            'src/app/(auth)/login/login-submit-button.tsx' \
+            'src/app/(auth)/login/page.tsx' \
+            'src/app/(learner)/dashboard/page.tsx' \
+            'src/app/(public)/explore/page.tsx' \
+            src/app/admin/layout.tsx \
             src/components/shared/header.tsx \
-            src/components/ui/skeleton.tsx \
+            src/components/ui \
+            src/lib/i18n.ts \
             src/modules/assessments/management-actions.ts \
+            playwright.config.ts \
             tests/e2e/accessibility.spec.ts \
-            tests/e2e/smoke.spec.ts \
-            hardening-artifact/
+            tests/e2e/smoke.spec.ts
 
-      - name: Upload normalized hardening files
-        uses: actions/upload-artifact@v4
-        with:
-          name: normalized-hardening-${{ github.run_id }}
-          path: hardening-artifact
-          retention-days: 1
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "chore: normalize hardening files and lockfiles"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
 
-      - name: Runtime dependency audit summary
-        shell: bash
-        run: npm audit --omit=dev || true
+      - name: Runtime dependency audit
+        run: npm audit --omit=dev --audit-level=critical
 
       - name: Generate Prisma Client
         run: npx prisma generate
