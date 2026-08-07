@@ -1,7 +1,6 @@
 'use server';
 
 import { Prisma } from '@prisma/client';
-import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 import { db } from '@/lib/db';
@@ -144,7 +143,7 @@ export async function createQuestion(form: FormData) {
       entityId: question.id,
     },
   });
-  redirect(questionsPath(question.id, 'created'));
+  return { redirectTo: questionsPath(question.id, 'created') };
 }
 
 export async function updateQuestion(form: FormData) {
@@ -193,7 +192,7 @@ export async function updateQuestion(form: FormData) {
       },
     });
   });
-  redirect(questionsPath(raw.questionId, 'updated'));
+  return { redirectTo: questionsPath(raw.questionId, 'updated') };
 }
 
 export async function deleteQuestion(form: FormData) {
@@ -211,7 +210,7 @@ export async function deleteQuestion(form: FormData) {
       entityId: id,
     },
   });
-  redirect(questionsPath(undefined, 'deleted'));
+  return { redirectTo: questionsPath(undefined, 'deleted') };
 }
 
 const optionalPositiveInt = z.preprocess(
