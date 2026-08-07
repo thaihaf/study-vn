@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { ActionRedirectForm } from '@/components/shared/action-redirect-form';
+import { ServerActionButton } from '@/components/shared/server-action-button';
 import { db } from '@/lib/db';
 import { startAssessment } from '@/modules/assessments/learner-actions';
 import { requireUser } from '@/modules/auth/session';
@@ -36,10 +38,12 @@ export default async function EssaySet({
       <span className="status">{row.questions.length} đề luyện</span>
       <h1>{row.title}</h1>
       <p>{row.description}</p>
-      <form action={startAssessment}>
+      <ActionRedirectForm action={startAssessment}>
         <input type="hidden" name="assessmentId" value={row.id} />
-        <button className="btn">Bắt đầu viết</button>
-      </form>
+        <ServerActionButton className="btn" pendingLabel="Đang bắt đầu...">
+          Bắt đầu viết
+        </ServerActionButton>
+      </ActionRedirectForm>
       {attempts.length > 0 && (
         <section>
           <h2>Các lần đã luyện</h2>
