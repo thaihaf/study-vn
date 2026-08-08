@@ -53,6 +53,13 @@ test('document AI infers metadata, creates course, publishes, enrolls and teache
   await expect(page.getByText('Bài 9: Kiến thức từ tài liệu')).toBeVisible();
   await expect(page.getByText('Nội dung có thể chỉnh sửa.')).toHaveCount(0);
 
+  const moduleOne = page.locator('.builder-module').first();
+  await expect(moduleOne.locator('input[type="number"]').first()).not.toHaveValue('');
+  await expect(moduleOne.getByLabel(/Mục tiêu học tập/)).not.toHaveValue('');
+  const firstLesson = moduleOne.locator('.builder-lesson').first();
+  await expect(firstLesson.getByLabel('Mô tả bài')).not.toHaveValue('');
+  await expect(firstLesson.getByLabel(/Mục tiêu bài học/)).not.toHaveValue('');
+
   await page.getByRole('button', { name: 'Xuất bản ngay' }).click();
   await expect(page.getByText(/PUBLISHED/).first()).toBeVisible();
 
