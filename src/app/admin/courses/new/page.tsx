@@ -1,59 +1,40 @@
 import { createCourse } from '@/app/actions';
+import { hasRealAIConfiguration } from '@/modules/ai/openai-structured';
 import { requirePermission } from '@/modules/auth/session';
 import { createCourseFromDocuments } from '@/modules/courses/create-from-documents';
 
 export default async function NewCourse() {
   await requirePermission('course:edit');
   const aiConfigured =
-    process.env.AI_PROVIDER === 'fake' ||
-    Boolean(process.env.OPENAI_MODEL && process.env['OPENAI_API' + '_KEY']);
+    hasRealAIConfiguration() ||
+    (process.env.NODE_ENV !== 'production' && process.env.AI_PROVIDER === 'fake');
 
   return (
     <>
       <h1 style={{ fontSize: '2.5rem' }}>Khóa học mới</h1>
       <p className="muted">
-        Tải tài liệu để AI nghiên cứu và tạo cấu trúc cùng nội dung khóa học,
-        hoặc tạo một bản nháp thủ công.
+        Chỉ cần tải tài liệu lên. AI sẽ tự nghiên cứu, đặt tên, viết mô tả,
+        xác định danh mục, trình độ, quy mô và xây dựng toàn bộ khóa học để bạn
+        review trước khi xuất bản.
       </p>
 
       <form className="card grid" action={createCourseFromDocuments}>
         <div>
           <span className="status">AI + TÀI LIỆU</span>
-          <h2>Tạo khóa học từ tài liệu</h2>
+          <h2 style={{ marginTop: '1rem' }}>Tạo khóa học tự động</h2>
           <p className="muted">
             Hỗ trợ TXT, Markdown, PDF và DOCX. Có thể chọn tối đa 3 tệp, tổng
-            dung lượng tối đa 5 MB. Tài liệu sẽ được trích xuất, chia thành các
-            đoạn và dùng làm nguồn cho AI.
+            dung lượng tối đa 5 MB. AI sẽ dùng tài liệu làm nguồn kiến thức,
+            tự quyết định metadata và cấu trúc phù hợp.
           </p>
         </div>
 
         {!aiConfigured && (
           <div className="warning-card card">
-            AI chưa được cấu hình. Cần cấu hình API key và{' '}
-            <code>OPENAI_MODEL</code>, hoặc <code>AI_PROVIDER=fake</code> để
-            kiểm thử.
+            AI thật chưa được cấu hình cho môi trường này. Hãy cấu hình Vercel
+            AI Gateway hoặc OpenAI trước khi tạo khóa học từ tài liệu.
           </div>
         )}
-
-        <label className="label">
-          Kiểu khóa học
-          <select
-            className="input"
-            name="template"
-            defaultValue="LEARN_EXAM_INTERVIEW"
-          >
-            <option value="GENERAL_LEARNING">Học kiến thức</option>
-            <option value="EXAM_PREP">Ôn thi</option>
-            <option value="INTERVIEW_PREP">Phỏng vấn</option>
-            <option value="LEARN_EXAM_INTERVIEW">
-              Học + Thi + Phỏng vấn
-            </option>
-          </select>
-          <span className="muted">
-            Hệ thống tự áp dụng chuẩn chung về cách dạy, kiểm tra, tự luận và
-            phỏng vấn; không cần upload lại file hướng dẫn format.
-          </span>
-        </label>
 
         <label className="label">
           Tài liệu để AI nghiên cứu
@@ -66,81 +47,39 @@ export default async function NewCourse() {
             required
           />
           <span className="muted">
-            AI sẽ ưu tiên kiến thức có trong các tài liệu này khi tạo bài học.
+            Đây là thông tin bắt buộc duy nhất. AI sẽ tự suy ra tên khóa học,
+            mục tiêu, đối tượng, trình độ và số lượng module/bài học.
           </span>
         </label>
 
         <label className="label">
-          Tên khóa học cho AI
-          <input
-            className="input"
-            name="title"
-            required
-            minLength={3}
-            placeholder="Ví dụ: Ôn thi Chuyên viên CNTT Agribank"
-          />
-        </label>
-
-        <label className="label">
-          Mục tiêu / mô tả khóa học
+          Yêu cầu thêm <span className="muted">(không bắt buộc)</span>
           <textarea
             className="input"
-            name="description"
-            rows={4}
-            required
-            minLength={10}
-            placeholder="Mô tả AI cần tập trung vào kiến thức nào và người học cần đạt được gì…"
+            name="guidance"
+            rows={3}
+            maxLength={2000}
+            placeholder="Ví dụ: Tôi chuẩn bị phỏng vấn trong 2 tuần, ưu tiên phần thực hành và câu hỏi tình huống. Có thể để trống."
           />
+          <span className="muted">
+            Chỉ dùng khi bạn muốn AI ưu tiên một mục tiêu đặc biệt. Không cần
+            mô tả lại nội dung đã có trong tài liệu.
+          </span>
         </label>
 
-        <div className="builder-two-cols">
-          <label className="label">
-            Danh mục khóa học AI
-            <input className="input" name="category" required />
-          </label>
-          <label className="label">
-            Trình độ khóa học AI
-            <select className="input" name="level" defaultValue="Trung cấp">
-              <option>Cơ bản</option>
-              <option>Trung cấp</option>
-              <option>Nâng cao</option>
-            </select>
-          </label>
+        <input type="hidden" name="template" value="GENERAL_LEARNING" />
+
+        <div className="card inset-card">
+          <b>Sau khi AI hoàn tất</b>
+          <p className="muted" style={{ marginBottom: 0 }}>
+            Khóa học được lưu dưới dạng bản nháp. Bạn sẽ được chuyển thẳng sang
+            màn hình review để kiểm tra và chỉnh sửa tên, mô tả, module, bài học
+            và nội dung trước khi bấm Xuất bản.
+          </p>
         </div>
 
-        <div className="builder-three-cols">
-          <label className="label">
-            Đối tượng học
-            <input
-              className="input"
-              name="audience"
-              placeholder="Ví dụ: Developer 2-3 năm kinh nghiệm"
-            />
-          </label>
-          <label className="label">
-            Kết quả mong muốn
-            <input
-              className="input"
-              name="outcome"
-              placeholder="Ví dụ: Đủ kiến thức làm bài và phỏng vấn"
-            />
-          </label>
-          <label className="label">
-            Quy mô khóa học
-            <input
-              className="input"
-              name="duration"
-              placeholder="Ví dụ: 8 bài, khoảng 4 giờ"
-            />
-          </label>
-        </div>
-
-        <p className="muted">
-          Sau khi tạo, khóa học vẫn ở trạng thái bản nháp để bạn kiểm tra và sửa
-          trước khi gửi duyệt hoặc xuất bản.
-        </p>
         <button className="btn" disabled={!aiConfigured}>
-          AI nghiên cứu tài liệu và tạo khóa học
+          AI nghiên cứu tài liệu và tạo bản nháp
         </button>
       </form>
 
