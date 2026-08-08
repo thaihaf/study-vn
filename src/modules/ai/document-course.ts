@@ -3,7 +3,11 @@ import {
   e2eRichDocumentLesson,
   isE2EDocumentAIEnabled,
 } from './e2e-document-provider';
-import { OpenAIProvider, FakeAIProvider, type GenerateContext } from './provider';
+import {
+  FakeAIProvider,
+  OpenAIProvider,
+  type GenerateContext,
+} from './provider';
 import {
   configuredAIModel,
   hasRealAIConfiguration,
@@ -27,7 +31,10 @@ const stringArray = { type: 'array', items: { type: 'string' } };
 export function getDocumentCourseProvider() {
   if (hasRealAIConfiguration()) return new OpenAIProvider();
   if (isE2EDocumentAIEnabled()) return new E2EDocumentAIProvider();
-  if (process.env.NODE_ENV !== 'production' && process.env.AI_PROVIDER === 'fake') {
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    process.env.AI_PROVIDER === 'fake'
+  ) {
     return new FakeAIProvider();
   }
   throw new Error('REAL_AI_REQUIRED_FOR_DOCUMENT_COURSE');
@@ -59,7 +66,10 @@ export async function generateRichDocumentLesson(
   if (isE2EDocumentAIEnabled()) return e2eRichDocumentLesson();
 
   if (!hasRealAIConfiguration()) {
-    if (process.env.NODE_ENV !== 'production' && process.env.AI_PROVIDER === 'fake') {
+    if (
+      process.env.NODE_ENV !== 'production' &&
+      process.env.AI_PROVIDER === 'fake'
+    ) {
       return lessonSchema.parse(await new FakeAIProvider().generateLesson(input));
     }
     throw new Error('REAL_AI_REQUIRED_FOR_DOCUMENT_COURSE');
