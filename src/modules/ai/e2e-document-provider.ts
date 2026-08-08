@@ -2,7 +2,7 @@ import { FakeAIProvider, type GenerateContext } from './provider';
 import { blueprintSchema, lessonSchema } from './schemas';
 
 export function isE2EDocumentAIEnabled() {
-  return process.env.CI === 'true' && process.env.E2E_DOCUMENT_AI === 'true';
+  return process.env.CI === 'true' && process.env.AI_PROVIDER === 'fake';
 }
 
 export class E2EDocumentAIProvider extends FakeAIProvider {
