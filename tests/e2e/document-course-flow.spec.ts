@@ -1,0 +1,97 @@
+import { expect, test } from '@playwright/test';
+
+const adminEmail = process.env.SEED_ADMIN_EMAIL;
+const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+const learnerEmail = process.env.SEED_LEARNER_EMAIL;
+const learnerPassword = process.env.SEED_LEARNER_PASSWORD;
+
+if (!adminEmail || !adminPassword || !learnerEmail || !learnerPassword) {
+  throw new Error('Missing deterministic E2E credential environment variables.');
+}
+
+test.describe.configure({ retries: 0 });
+
+async function login(page: import('@playwright/test').Page, email: string, password: string) {
+  await page.goto('/login');
+  await page.getByLabel('Email', { exact: true }).fill(email);
+  await page.getByLabel('Mật khẩu', { exact: true }).fill(password);
+  await page.getByRole('button', { name: 'Đăng nhập' }).click();
+}
+
+test('document AI course can be created, published, enrolled and studied', async ({
+  page,
+}) => {
+  const suffix = process.env.GITHUB_RUN_ID ?? String(Date.now());
+  const courseTitle = `Khóa học tài liệu E2E ${suffix}`;
+
+  await login(page, adminEmail, adminPassword);
+  await expect(page).toHaveURL(/\/admin(?:$|\/)/);
+
+  await page.goto('/admin/courses/new');
+  await page.getByLabel('Tài liệu để AI nghiên cứu').setInputFiles({
+    name: 'nguon-kiem-thu.md',
+    mimeType: 'text/markdown',
+    buffer: Buffer.from(
+      '# Tài liệu kiểm thử\n\nCore Banking xử lý dữ liệu và giao dịch cốt lõi. ACID giúp bảo đảm tính nhất quán. Open Banking sử dụng API có kiểm soát để tích hợp với bên thứ ba. Nội dung này chỉ dùng cho kiểm thử E2E.',
+      'utf8',
+    ),
+  });
+  await page.getByLabel('Tên khóa học cho AI', { exact: true }).fill(courseTitle);
+  await page
+    .getByLabel('Mục tiêu / mô tả khóa học', { exact: true })
+    .fill(
+      'Kiểm tra tự động luồng tạo khóa học từ tài liệu, xuất bản, ghi danh và học nội dung AI.',
+    );
+  await page.getByLabel('Danh mục khóa học AI', { exact: true }).fill('E2E AI');
+  await page.getByLabel('Trình độ khóa học AI', { exact: true }).selectOption('Trung cấp');
+  await page.getByLabel('Đối tượng học', { exact: true }).fill('Software Developer');
+  await page
+    .getByLabel('Kết quả mong muốn', { exact: true })
+    .fill('Hiểu và áp dụng nội dung từ tài liệu');
+  await page.getByLabel('Quy mô khóa học', { exact: true }).fill('3 module, 9 bài');
+  await page
+    .getByRole('button', { name: 'AI nghiên cứu tài liệu và tạo khóa học' })
+    .click();
+
+  await expect(page).toHaveURL(/\/admin\/courses\/.+\/edit/, { timeout: 120_000 });
+  await expect(page.getByText(courseTitle).first()).toBeVisible();
+  await expect(page.getByText('Module 1: Nền tảng kiểm thử')).toBeVisible();
+  await expect(page.getByText('Module 3: Nền tảng kiểm thử')).toBeVisible();
+  await expect(page.getByText('Bài 9: Kiến thức từ tài liệu')).toBeVisible();
+  await expect(page.getByText('Nội dung có thể chỉnh sửa.')).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Xuất bản ngay' }).click();
+  await expect(page.getByText(/PUBLISHED/).first()).toBeVisible();
+
+  await page.getByRole('button', { name: 'Đăng xuất' }).click();
+  await login(page, learnerEmail, learnerPassword);
+  await expect(page).toHaveURL(/\/dashboard/);
+
+  await page.goto('/explore');
+  await page.getByRole('link', { name: new RegExp(courseTitle) }).click();
+  await page.getByRole('button', { name: 'Bắt đầu học' }).click();
+  await page.getByRole('link', { name: /^Tiếp tục:/ }).click();
+
+  await expect(page).toHaveURL(/\/learn\//);
+  await expect(
+    page.getByRole('heading', { name: 'Bài 1: Kiến thức từ tài liệu' }),
+  ).toBeVisible();
+  await expect(page.getByText('Ví dụ thực tế')).toBeVisible();
+  await expect(page.getByText('Tình huống')).toBeVisible();
+  await expect(page.getByText('Câu hỏi phỏng vấn')).toBeVisible();
+  await expect(page.getByText('Tóm tắt')).toBeVisible();
+  await expect(page.getByText('Nội dung có thể chỉnh sửa.')).toHaveCount(0);
+
+  await page.getByLabel('Ghi chú riêng').fill('Ghi chú từ khóa học AI E2E.');
+  await page.getByRole('button', { name: 'Lưu ghi chú' }).click();
+  await page.getByRole('button', { name: 'Đánh dấu', exact: false }).click();
+  await page.getByRole('button', { name: 'Hoàn thành bài' }).click();
+  await expect(
+    page.getByRole('button', { name: '✓ Đã hoàn thành' }),
+  ).toBeVisible();
+
+  await page.getByRole('link', { name: 'Bài sau →' }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Bài 2: Kiến thức từ tài liệu' }),
+  ).toBeVisible();
+});
