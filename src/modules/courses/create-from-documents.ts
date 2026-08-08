@@ -54,7 +54,9 @@ function assertBlueprintScope(
 }
 
 function uniqueObjectives(items: string[]) {
-  return Array.from(new Set(items.map((item) => item.trim()).filter(Boolean))).slice(0, 8);
+  return Array.from(
+    new Set(items.map((item) => item.trim()).filter(Boolean)),
+  ).slice(0, 8);
 }
 
 export async function createCourseFromDocuments(form: FormData) {
@@ -176,7 +178,8 @@ export async function createCourseFromDocuments(form: FormData) {
             Math.min(35, Math.round(contentSize / 500)),
           );
           const description =
-            lesson.description && !lesson.description.startsWith('Bài học được xây dựng')
+            lesson.description &&
+            !lesson.description.startsWith('Bài học được xây dựng')
               ? lesson.description
               : `Học và áp dụng: ${lesson.objectives.join('; ')}`;
           return {
@@ -223,7 +226,8 @@ export async function createCourseFromDocuments(form: FormData) {
           create: {
             versionNumber: 1,
             createdById: user.id,
-            changeSummary: 'Bản nháp hoàn chỉnh do AI tạo từ tài liệu, chờ review',
+            changeSummary:
+              'Bản nháp hoàn chỉnh do AI tạo từ tài liệu, chờ review',
             modules: {
               create: moduleData.map(
                 ({ courseModule, modulePosition, lessonData }) => ({
