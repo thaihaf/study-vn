@@ -41,6 +41,12 @@ function assertBlueprintScope(blueprint: z.infer<typeof blueprintSchema>) {
   }
 }
 
+function uniqueObjectives(items: string[]) {
+  return Array.from(
+    new Set(items.map((item) => item.trim()).filter(Boolean)),
+  ).slice(0, 8);
+}
+
 export async function createCourseFromDocuments(form: FormData) {
   const user = await requirePermission('course:edit');
   await requirePermission('ai:generate');
@@ -155,11 +161,44 @@ export async function createCourseFromDocuments(form: FormData) {
           if (generated.blocks.length < 7 || contentSize < 1800) {
             throw new Error(`AI_LESSON_TOO_SHORT:${lesson.slug}`);
           }
-          return { lesson, generated, lessonPosition };
+          const estimatedMinutes = Math.max(
+            12,
+            Math.min(35, Math.round(contentSize / 500)),
+          );
+          return {
+            lesson: {
+              ...lesson,
+              description: `Học và áp dụng: ${lesson.objectives.join('; ')}`,
+              estimatedMinutes,
+            },
+            generated,
+            lessonPosition,
+          };
         }),
       );
-      moduleData.push({ courseModule, modulePosition, lessonData });
+
+      const moduleObjectives = uniqueObjectives(
+        courseModule.lessons.flatMap((lesson) => lesson.objectives),
+      );
+      const moduleMinutes = lessonData.reduce(
+        (sum, item) => sum + item.lesson.estimatedMinutes,
+        0,
+      );
+      moduleData.push({
+        courseModule: {
+          ...courseModule,
+          estimatedMinutes: moduleMinutes,
+          learningObjectives: moduleObjectives,
+        },
+        modulePosition,
+        lessonData,
+      });
     }
+
+    const courseMinutes = moduleData.reduce(
+      (sum, item) => sum + item.courseModule.estimatedMinutes,
+      0,
+    );
 
     const course = await db.course.create({
       data: {
@@ -169,24 +208,28 @@ export async function createCourseFromDocuments(form: FormData) {
         category: blueprint.category,
         level: blueprint.level,
         language: blueprint.language || 'vi',
+        estimatedMinutes: courseMinutes,
         ownerId: user.id,
         versions: {
           create: {
             versionNumber: 1,
             createdById: user.id,
-            changeSummary: 'Bản nháp AI tự thiết kế từ tài liệu nguồn để review',
+            changeSummary: 'Bản nháp AI tự thiết kế hoàn chỉnh từ tài liệu nguồn để review',
             modules: {
               create: moduleData.map(
                 ({ courseModule, modulePosition, lessonData }) => ({
                   title: courseModule.title,
                   description: courseModule.description,
+                  estimatedMinutes: courseModule.estimatedMinutes,
+                  learningObjectives: toJson(courseModule.learningObjectives),
                   position: modulePosition,
                   lessons: {
                     create: lessonData.map(
                       ({ lesson, generated, lessonPosition }) => ({
                         title: lesson.title,
                         slug: lesson.slug,
-                        description: courseModule.description,
+                        description: lesson.description,
+                        estimatedMinutes: lesson.estimatedMinutes,
                         position: lessonPosition,
                         learningObjectives: toJson(lesson.objectives),
                         blocks: {
