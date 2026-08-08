@@ -23,37 +23,25 @@ import { extractTextFromUpload } from '@/modules/sources/extract';
 import { chunks, uploadMetadata } from '@/modules/sources/service';
 
 const inputSchema = z.object({
-  title: z.string().min(3).max(240),
-  description: z.string().min(10).max(3000),
-  category: z.string().min(1).max(120),
-  level: z.string().min(1).max(120),
-  audience: z.string().max(1000).default(''),
-  outcome: z.string().max(1500).default(''),
-  duration: z.string().max(500).default(''),
   template: z.enum(courseTemplateValues).default('GENERAL_LEARNING'),
+  guidance: z.string().max(2000).default(''),
 });
 
 const toJson = (value: unknown) => value as Prisma.InputJsonValue;
 
-function requestedScope(duration: string) {
-  const moduleMatch = duration.match(/(\d+)\s*module/i);
-  const lessonRange = duration.match(/(\d+)\s*-\s*(\d+)\s*(?:bài|lesson)/i);
-  const lessonSingle = duration.match(/(\d+)\s*(?:bài|lesson)/i);
-  return {
-    minModules: moduleMatch ? Math.min(Number(moduleMatch[1]), 20) : 2,
-    minLessons: lessonRange
-      ? Number(lessonRange[1])
-      : lessonSingle
-        ? Number(lessonSingle[1])
-        : 6,
-  };
+function minimumScope(template: (typeof courseTemplateValues)[number]) {
+  if (template === 'GENERAL_LEARNING') return { minModules: 2, minLessons: 6 };
+  if (template === 'EXAM_PREP' || template === 'INTERVIEW_PREP') {
+    return { minModules: 3, minLessons: 8 };
+  }
+  return { minModules: 3, minLessons: 9 };
 }
 
 function assertBlueprintScope(
   blueprint: z.infer<typeof blueprintSchema>,
-  duration: string,
+  template: (typeof courseTemplateValues)[number],
 ) {
-  const { minModules, minLessons } = requestedScope(duration);
+  const { minModules, minLessons } = minimumScope(template);
   const lessonCount = blueprint.modules.reduce(
     (total, courseModule) => total + courseModule.lessons.length,
     0,
@@ -63,6 +51,10 @@ function assertBlueprintScope(
       `AI_COURSE_SCOPE_TOO_SMALL:${blueprint.modules.length}_modules:${lessonCount}_lessons`,
     );
   }
+}
+
+function uniqueObjectives(items: string[]) {
+  return Array.from(new Set(items.map((item) => item.trim()).filter(Boolean))).slice(0, 8);
 }
 
 export async function createCourseFromDocuments(form: FormData) {
@@ -124,17 +116,14 @@ export async function createCourseFromDocuments(form: FormData) {
 
   const prompt = [
     learningStandardFor(input.template),
-    'YÊU CẦU RIÊNG CỦA KHÓA HỌC',
-    'Nghiên cứu kỹ tài liệu nguồn rồi xây dựng khóa học dựa trên kiến thức trong tài liệu.',
-    `Tên khóa học: ${input.title}`,
-    `Mục tiêu và mô tả: ${input.description}`,
-    `Danh mục: ${input.category}`,
-    `Trình độ: ${input.level}`,
-    input.audience && `Đối tượng học: ${input.audience}`,
-    input.outcome && `Kết quả mong muốn: ${input.outcome}`,
-    input.duration && `Thời lượng hoặc số bài: ${input.duration}`,
-    'Quy mô người dùng yêu cầu là yêu cầu thật, không được rút thành khóa demo 1 module/1 bài. Mỗi module cần có các bài đủ để đạt mục tiêu và tránh nội dung placeholder.',
-    'Ưu tiên nội dung có căn cứ trong nguồn và sắp xếp bài học theo thứ tự hợp lý.',
+    'YÊU CẦU TẠO KHÓA HỌC AI-FIRST',
+    'Đọc kỹ toàn bộ tài liệu nguồn và tự thiết kế một khóa học hoàn chỉnh để người dùng chỉ cần review, không phải điền nốt metadata hay roadmap.',
+    'Tự đặt tên khóa học rõ ràng và sát mục tiêu tài liệu.',
+    'Tự viết mô tả khóa học, chọn danh mục, trình độ, số mô-đun, số bài và thứ tự học hợp lý.',
+    'Mỗi mô-đun và bài học phải có mục tiêu rõ ràng. Không tạo placeholder, không tạo roadmap sơ sài.',
+    'Quy mô phải đủ để bao phủ tài liệu; với khóa Học + Thi + Phỏng vấn cần tối thiểu 3 mô-đun và 9 bài.',
+    input.guidance && `Ghi chú thêm của người dùng: ${input.guidance}`,
+    'Ưu tiên nội dung có căn cứ trong nguồn. Phần nào là suy luận phải thể hiện thận trọng.',
   ]
     .filter(Boolean)
     .join('\n');
@@ -166,7 +155,7 @@ export async function createCourseFromDocuments(form: FormData) {
     const blueprint = blueprintSchema.parse(
       await provider.generateCourseBlueprint(context),
     );
-    assertBlueprintScope(blueprint, input.duration);
+    assertBlueprintScope(blueprint, input.template);
 
     const moduleData = [];
     for (const [modulePosition, courseModule] of blueprint.modules.entries()) {
@@ -182,38 +171,74 @@ export async function createCourseFromDocuments(form: FormData) {
           if (generated.blocks.length < 7 || contentSize < 1800) {
             throw new Error(`AI_LESSON_TOO_SHORT:${lesson.slug}`);
           }
-          return { lesson, generated, lessonPosition };
+          const estimatedMinutes = Math.max(
+            12,
+            Math.min(35, Math.round(contentSize / 500)),
+          );
+          const description =
+            lesson.description && !lesson.description.startsWith('Bài học được xây dựng')
+              ? lesson.description
+              : `Học và áp dụng: ${lesson.objectives.join('; ')}`;
+          return {
+            lesson: { ...lesson, description, estimatedMinutes },
+            generated,
+            lessonPosition,
+          };
         }),
       );
-      moduleData.push({ courseModule, modulePosition, lessonData });
+      const moduleObjectives = uniqueObjectives(
+        courseModule.lessons.flatMap((lesson) => lesson.objectives),
+      );
+      const moduleMinutes = lessonData.reduce(
+        (sum, item) => sum + item.lesson.estimatedMinutes,
+        0,
+      );
+      moduleData.push({
+        courseModule: {
+          ...courseModule,
+          estimatedMinutes: moduleMinutes,
+          learningObjectives: moduleObjectives,
+        },
+        modulePosition,
+        lessonData,
+      });
     }
+
+    const courseMinutes = moduleData.reduce(
+      (sum, item) => sum + item.courseModule.estimatedMinutes,
+      0,
+    );
 
     const course = await db.course.create({
       data: {
-        title: input.title,
-        slug: `${slugify(input.title)}-${crypto.randomBytes(3).toString('hex')}`,
-        shortDescription: input.description,
-        category: input.category,
-        level: input.level,
-        language: 'vi',
+        title: blueprint.title,
+        slug: `${slugify(blueprint.title)}-${crypto.randomBytes(3).toString('hex')}`,
+        shortDescription: blueprint.shortDescription,
+        category: blueprint.category,
+        level: blueprint.level,
+        language: blueprint.language || 'vi',
+        estimatedMinutes: courseMinutes,
         ownerId: user.id,
         versions: {
           create: {
             versionNumber: 1,
             createdById: user.id,
-            changeSummary: 'Bản nháp AI tạo từ tài liệu nguồn',
+            changeSummary: 'Bản nháp hoàn chỉnh do AI tạo từ tài liệu, chờ review',
             modules: {
               create: moduleData.map(
                 ({ courseModule, modulePosition, lessonData }) => ({
                   title: courseModule.title,
                   description: courseModule.description,
+                  estimatedMinutes: courseModule.estimatedMinutes,
+                  learningObjectives: toJson(courseModule.learningObjectives),
                   position: modulePosition,
                   lessons: {
                     create: lessonData.map(
                       ({ lesson, generated, lessonPosition }) => ({
                         title: lesson.title,
                         slug: lesson.slug,
-                        description: courseModule.description,
+                        description: lesson.description,
+                        estimatedMinutes: lesson.estimatedMinutes,
                         position: lessonPosition,
                         learningObjectives: toJson(lesson.objectives),
                         blocks: {
