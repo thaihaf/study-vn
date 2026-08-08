@@ -1,5 +1,6 @@
 import { LessonGenerationPanel } from '@/components/admin/lesson-generation-panel';
 import { db } from '@/lib/db';
+import { hasRealAIConfiguration } from '@/modules/ai/openai-structured';
 import { runRateLimitedGeneration } from '@/modules/ai/rate-limited-actions';
 import { requirePermission } from '@/modules/auth/session';
 
@@ -11,17 +12,16 @@ export default async function Generate() {
     take: 100,
   });
   const configured =
-    process.env.AI_PROVIDER === 'fake' ||
-    Boolean(process.env.OPENAI_API_KEY && process.env.OPENAI_MODEL);
+    hasRealAIConfiguration() ||
+    (process.env.NODE_ENV !== 'production' && process.env.AI_PROVIDER === 'fake');
 
   return (
     <>
       <h1 style={{ fontSize: '2.5rem' }}>Tạo nội dung với AI</h1>
       {!configured && (
         <div className="card warning-card">
-          AI chưa được cấu hình. Thiết lập <code>OPENAI_API_KEY</code> và{' '}
-          <code>OPENAI_MODEL</code>, hoặc dùng <code>AI_PROVIDER=fake</code> để
-          kiểm thử.
+          AI thật chưa được cấu hình cho môi trường này. Hãy cấu hình Vercel AI
+          Gateway hoặc OpenAI trước khi chạy generation.
         </div>
       )}
       <form className="card grid" action={runRateLimitedGeneration}>
@@ -104,27 +104,49 @@ export default async function Generate() {
             defaultValue="Rõ ràng, thực tế, dễ học"
           />
         </label>
+
         <fieldset className="card inset-card">
           <legend>
             <b>Tài liệu nguồn</b>
           </legend>
-          {sources.length ? (
-            <div className="grid">
-              {sources.map((source) => (
-                <label className="check-row" key={source.id}>
-                  <input type="checkbox" name="sourceIds" value={source.id} />
-                  {source.title}{' '}
-                  <span className="muted">· {source.sourceType}</span>
-                </label>
-              ))}
-            </div>
-          ) : (
-            <p className="muted">
-              Chưa có nguồn READY. Có thể tạo nội dung không dùng nguồn hoặc tải
-              nguồn trước.
-            </p>
+
+          <label className="label">
+            Tải tài liệu mới ngay tại đây
+            <input
+              className="input"
+              type="file"
+              name="files"
+              accept=".txt,.md,.markdown,.pdf,.docx,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              multiple
+            />
+            <span className="muted">
+              Hỗ trợ TXT, Markdown, PDF và DOCX. Tối đa 3 tệp, tổng dung lượng 5
+              MB. File mới sẽ tự được trích xuất, chia đoạn, lưu thành nguồn và
+              gắn vào generation job hiện tại.
+            </span>
+          </label>
+
+          {sources.length > 0 && (
+            <>
+              <div style={{ marginTop: '1rem' }}>
+                <b>Hoặc chọn thêm nguồn đã có</b>
+                <p className="muted">
+                  Có thể kết hợp file vừa tải với các nguồn READY trước đó.
+                </p>
+              </div>
+              <div className="grid">
+                {sources.map((source) => (
+                  <label className="check-row" key={source.id}>
+                    <input type="checkbox" name="sourceIds" value={source.id} />
+                    {source.title}{' '}
+                    <span className="muted">· {source.sourceType}</span>
+                  </label>
+                ))}
+              </div>
+            </>
           )}
         </fieldset>
+
         <p className="muted">
           Nội dung AI được lưu thành job trước. Admin xem output rồi chủ động áp
           dụng; không tự động ghi đè chỉnh sửa thủ công.
