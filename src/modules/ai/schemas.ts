@@ -13,13 +13,19 @@ export const blueprintSchema = z.object({
         title: z.string().min(1),
         description: z.string().min(1),
         estimatedMinutes: z.number().int().positive().default(30),
-        learningObjectives: z.array(z.string().min(1)).min(1).default(['Nắm được nội dung chính của mô-đun']),
+        learningObjectives: z
+          .array(z.string().min(1))
+          .min(1)
+          .default(['Nắm được nội dung chính của mô-đun']),
         lessons: z
           .array(
             z.object({
               title: z.string().min(1),
               slug: z.string().regex(/^[a-z0-9-]+$/),
-              description: z.string().min(1).default('Bài học được xây dựng từ tài liệu nguồn.'),
+              description: z
+                .string()
+                .min(1)
+                .default('Bài học được xây dựng từ tài liệu nguồn.'),
               estimatedMinutes: z.number().int().positive().default(15),
               objectives: z.array(z.string().min(1)).min(1),
             }),
