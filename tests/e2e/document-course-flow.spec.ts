@@ -6,12 +6,18 @@ const learnerEmail = process.env.SEED_LEARNER_EMAIL;
 const learnerPassword = process.env.SEED_LEARNER_PASSWORD;
 
 if (!adminEmail || !adminPassword || !learnerEmail || !learnerPassword) {
-  throw new Error('Missing deterministic E2E credential environment variables.');
+  throw new Error(
+    'Missing deterministic E2E credential environment variables.',
+  );
 }
 
 test.describe.configure({ retries: 0 });
 
-async function login(page: import('@playwright/test').Page, email: string, password: string) {
+async function login(
+  page: import('@playwright/test').Page,
+  email: string,
+  password: string,
+) {
   await page.goto('/login');
   await page.getByLabel('Email', { exact: true }).fill(email);
   await page.getByLabel('Mật khẩu', { exact: true }).fill(password);
@@ -44,7 +50,9 @@ test('document AI infers the whole draft, then learner can enroll and study', as
     .getByRole('button', { name: 'AI tạo bản nháp để tôi review' })
     .click();
 
-  await expect(page).toHaveURL(/\/admin\/courses\/.+\/edit/, { timeout: 120_000 });
+  await expect(page).toHaveURL(/\/admin\/courses\/.+\/edit/, {
+    timeout: 120_000,
+  });
   await expect(page.getByText(courseTitle).first()).toBeVisible();
   await expect(page.getByText('Module 1: Nền tảng kiểm thử')).toBeVisible();
   await expect(page.getByText('Module 3: Nền tảng kiểm thử')).toBeVisible();
