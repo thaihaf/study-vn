@@ -37,7 +37,7 @@ const TEMPLATE_INSTRUCTIONS: Record<CourseTemplate, string> = {
 - Mỗi module nên có một bài kiểm tra hoặc scenario tổng hợp.
 - Tự luận dùng cấu trúc: định nghĩa -> cơ chế -> ví dụ -> lợi ích/rủi ro -> quan điểm.
 - Phỏng vấn dùng cấu trúc: answer -> why -> example -> impact.
-- Tăng độ khó theo: định nghĩa -> tại sao -> scenario -> trade-off -> production.`
+- Tăng độ khó theo: định nghĩa -> tại sao -> scenario -> trade-off -> production.`,
 };
 
 export function learningStandardFor(template: CourseTemplate) {
