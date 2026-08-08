@@ -4,19 +4,24 @@ export const blueprintSchema = z.object({
   title: z.string().min(3),
   shortDescription: z.string().min(10),
   category: z.string().min(1),
-  level: z.string(),
+  level: z.string().min(1),
   language: z.string().default('vi'),
+  estimatedMinutes: z.number().int().positive(),
   modules: z
     .array(
       z.object({
         title: z.string().min(1),
-        description: z.string(),
+        description: z.string().min(10),
+        estimatedMinutes: z.number().int().positive(),
+        learningObjectives: z.array(z.string().min(1)).min(1),
         lessons: z
           .array(
             z.object({
               title: z.string().min(1),
               slug: z.string().regex(/^[a-z0-9-]+$/),
-              objectives: z.array(z.string()).min(1),
+              description: z.string().min(10),
+              estimatedMinutes: z.number().int().positive(),
+              objectives: z.array(z.string().min(1)).min(1),
             }),
           )
           .min(1),
