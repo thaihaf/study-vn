@@ -18,16 +18,19 @@ async function login(page: import('@playwright/test').Page, email: string, passw
   await page.getByRole('button', { name: 'Đăng nhập' }).click();
 }
 
-test('document AI course can be created, published, enrolled and studied', async ({
+test('document AI infers metadata, creates course, publishes, enrolls and teaches', async ({
   page,
 }) => {
-  const suffix = process.env.GITHUB_RUN_ID ?? String(Date.now());
-  const courseTitle = `Khóa học tài liệu E2E ${suffix}`;
+  const generatedCourseTitle = 'Khóa học tài liệu E2E';
 
   await login(page, adminEmail, adminPassword);
   await expect(page).toHaveURL(/\/admin(?:$|\/)/);
 
   await page.goto('/admin/courses/new');
+  await expect(page.getByLabel('Tên khóa học cho AI')).toHaveCount(0);
+  await expect(page.getByLabel('Danh mục khóa học AI')).toHaveCount(0);
+  await expect(page.getByLabel('Quy mô khóa học')).toHaveCount(0);
+
   await page.getByLabel('Tài liệu để AI nghiên cứu').setInputFiles({
     name: 'nguon-kiem-thu.md',
     mimeType: 'text/markdown',
@@ -36,25 +39,15 @@ test('document AI course can be created, published, enrolled and studied', async
       'utf8',
     ),
   });
-  await page.getByLabel('Tên khóa học cho AI', { exact: true }).fill(courseTitle);
   await page
-    .getByLabel('Mục tiêu / mô tả khóa học', { exact: true })
-    .fill(
-      'Kiểm tra tự động luồng tạo khóa học từ tài liệu, xuất bản, ghi danh và học nội dung AI.',
-    );
-  await page.getByLabel('Danh mục khóa học AI', { exact: true }).fill('E2E AI');
-  await page.getByLabel('Trình độ khóa học AI', { exact: true }).selectOption('Trung cấp');
-  await page.getByLabel('Đối tượng học', { exact: true }).fill('Software Developer');
+    .getByLabel('Yêu cầu thêm')
+    .fill('Ưu tiên ví dụ thực tế và câu hỏi tình huống.');
   await page
-    .getByLabel('Kết quả mong muốn', { exact: true })
-    .fill('Hiểu và áp dụng nội dung từ tài liệu');
-  await page.getByLabel('Quy mô khóa học', { exact: true }).fill('3 module, 9 bài');
-  await page
-    .getByRole('button', { name: 'AI nghiên cứu tài liệu và tạo khóa học' })
+    .getByRole('button', { name: 'AI nghiên cứu tài liệu và tạo bản nháp' })
     .click();
 
   await expect(page).toHaveURL(/\/admin\/courses\/.+\/edit/, { timeout: 120_000 });
-  await expect(page.getByText(courseTitle).first()).toBeVisible();
+  await expect(page.getByText(generatedCourseTitle).first()).toBeVisible();
   await expect(page.getByText('Module 1: Nền tảng kiểm thử')).toBeVisible();
   await expect(page.getByText('Module 3: Nền tảng kiểm thử')).toBeVisible();
   await expect(page.getByText('Bài 9: Kiến thức từ tài liệu')).toBeVisible();
@@ -68,7 +61,7 @@ test('document AI course can be created, published, enrolled and studied', async
   await expect(page).toHaveURL(/\/dashboard/);
 
   await page.goto('/explore');
-  await page.getByRole('link', { name: new RegExp(courseTitle) }).click();
+  await page.getByRole('link', { name: new RegExp(generatedCourseTitle) }).click();
   await page.getByRole('button', { name: 'Bắt đầu học' }).click();
   await page.getByRole('link', { name: /^Tiếp tục:/ }).click();
 
