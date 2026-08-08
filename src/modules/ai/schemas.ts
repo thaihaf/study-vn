@@ -6,21 +6,21 @@ export const blueprintSchema = z.object({
   category: z.string().min(1),
   level: z.string().min(1),
   language: z.string().default('vi'),
-  estimatedMinutes: z.number().int().positive(),
+  estimatedMinutes: z.number().int().positive().default(60),
   modules: z
     .array(
       z.object({
         title: z.string().min(1),
-        description: z.string().min(10),
-        estimatedMinutes: z.number().int().positive(),
-        learningObjectives: z.array(z.string().min(1)).min(1),
+        description: z.string().min(1),
+        estimatedMinutes: z.number().int().positive().default(30),
+        learningObjectives: z.array(z.string().min(1)).min(1).default(['Nắm được nội dung chính của mô-đun']),
         lessons: z
           .array(
             z.object({
               title: z.string().min(1),
               slug: z.string().regex(/^[a-z0-9-]+$/),
-              description: z.string().min(10),
-              estimatedMinutes: z.number().int().positive(),
+              description: z.string().min(1).default('Bài học được xây dựng từ tài liệu nguồn.'),
+              estimatedMinutes: z.number().int().positive().default(15),
               objectives: z.array(z.string().min(1)).min(1),
             }),
           )
