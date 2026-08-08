@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import './document-course-flow.spec';
+
 const adminEmail = process.env.SEED_ADMIN_EMAIL;
 const adminPassword = process.env.SEED_ADMIN_PASSWORD;
 const learnerPassword = process.env.SEED_LEARNER_PASSWORD;
