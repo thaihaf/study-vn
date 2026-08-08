@@ -51,11 +51,17 @@ export default async function NewCourse() {
 
         <label className="label">
           Kiểu khóa học
-          <select className="input" name="template" defaultValue="LEARN_EXAM_INTERVIEW">
+          <select
+            className="input"
+            name="template"
+            defaultValue="LEARN_EXAM_INTERVIEW"
+          >
             <option value="GENERAL_LEARNING">Học kiến thức</option>
             <option value="EXAM_PREP">Ôn thi</option>
             <option value="INTERVIEW_PREP">Phỏng vấn</option>
-            <option value="LEARN_EXAM_INTERVIEW">Học + Thi + Phỏng vấn</option>
+            <option value="LEARN_EXAM_INTERVIEW">
+              Học + Thi + Phỏng vấn
+            </option>
           </select>
         </label>
 
@@ -90,7 +96,12 @@ export default async function NewCourse() {
           </label>
           <label className="label">
             Mô tả ngắn
-            <textarea className="input" name="description" required minLength={10} />
+            <textarea
+              className="input"
+              name="description"
+              required
+              minLength={10}
+            />
           </label>
           <div className="builder-two-cols">
             <label className="label">
